@@ -1,0 +1,11 @@
+{
+  "repositories": [
+    {
+    "type": "vcs",
+    "url": "https://github.com/berarma/omnipay-redsys"
+  }
+  ],
+  "require": {
+    "berarma/omnipay-redsys": "dev-master"
+  }
+}

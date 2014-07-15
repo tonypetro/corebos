@@ -6,3 +6,5 @@
 /backup
 /user_privileges
 /config-dev.inc.php
+/vendor
+/composer.lock
