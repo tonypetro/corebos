@@ -2,7 +2,7 @@
 require_once('coreboswslibrary/php/WSClient.php');
 require_once('include/utils/utils.php');
 require('vendor/autoload.php');
-require_once('modules/CobroPago/purchase.config.php');
+require_once('Pay.config.php');
 
 use Omnipay\Omnipay;
 use Omnipay\Common\CreditCard;
