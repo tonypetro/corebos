@@ -138,9 +138,10 @@ class Purchase {
 		$current_user = new Users();
 		$current_user->retrieveCurrentUserInfoFromFile(1);
 
-		$describeCobroPago = $this->ws->doDescribe('CobroPago');
-
-		$cobropagoId = $describeCobroPago['idPrefix'] . 'x' . $cobropagoId;
+		if (preg_match('/^\d+$/', $cobropagoId)) {
+			$describeCobroPago = $this->ws->doDescribe('CobroPago');
+			$cobropagoId = $describeCobroPago['idPrefix'] . 'x' . $cobropagoId;
+		}
 
 		$gateway = Omnipay::create($PURCHASE_CONFIG['omnipay']['driver']);
 		$gateway->initialize($PURCHASE_CONFIG['omnipay']);
