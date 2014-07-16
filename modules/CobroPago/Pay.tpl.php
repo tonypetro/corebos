@@ -2,6 +2,7 @@
   <p>
     <?php echo $message;?>
   </p>
+	<?php if ($response !== null && $response->isRedirect()): ?>
 	<form id="payment_form" method="POST" action="<?php echo $response->getRedirectUrl(); ?>">
 		<?php foreach ($response->getRedirectData() as $key => $value): ?>
 			<input type="hidden" name="<?php echo $key;?>" value="<?php echo $value;?>">
@@ -10,4 +11,5 @@
 	<script type="text/javascript">
 		document.getElementById('payment_form').submit();
 	</script>
+	<?php endif; ?>
 </div>
