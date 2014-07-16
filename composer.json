@@ -2,10 +2,10 @@
   "repositories": [
     {
     "type": "vcs",
-    "url": "https://github.com/berarma/omnipay-redsys"
+    "url": "https://github.com/tsolucio/omnipay-redsys"
   }
   ],
   "require": {
-    "berarma/omnipay-redsys": "dev-master"
+    "tsolucio/omnipay-redsys": "dev-master"
   }
 }
