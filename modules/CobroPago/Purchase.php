@@ -119,21 +119,20 @@ class Purchase {
 	}
 
 	public function pay($cobropagoId, $options = array(), $complete = false) {
-		global $PURCHASE_CONFIG;
+		global $PURCHASE_CONFIG, $site_URL;
 
 		$notifyUrl = '';
 		if (isset($options['notifyUrl'])) {
 			$notifyUrl = $options['notifyUrl'];
-			unset($options['notifyUrl']);
 		}
 
 		$defaults = array(
-			//'notifyUrl' => "http://80.35.20.79:8081/p/coreboscrm/htdocs/PaymentNotification.php?record={$cobropagoId}",
-			'notifyUrl' => "{$site_URL}/PaymentNotification.php?cpid={$cobropagoId}",
 			'returnUrl' => "{$site_URL}/index.php?action=DetailView&module=CobroPago&record={$cobropagoId}",
 			'cancelUrl' => "{$site_URL}/index.php?action=DetailView&module=CobroPago&record={$cobropagoId}",
 		);
 		$options = array_merge($defaults, $options);
+
+		$options['notifyUrl'] = "{$site_URL}/PaymentNotification.php?cpid={$cobropagoId}";
 
 		$current_user = new Users();
 		$current_user->retrieveCurrentUserInfoFromFile(1);

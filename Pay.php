@@ -1,11 +1,16 @@
 <?php
 require_once('modules/CobroPago/Purchase.php');
 
-$options = array(
-	'notifyUrl' => $_REQUEST['notify_url'],
-	'returnUrl' => $_REQUEST['return_url'],
-	'cancelUrl' => $_REQUEST['cancel_url'],
-);
+$options = array();
+if (isset($_REQUEST['notify_url'])) {
+  $options['notifyUrl'] = $_REQUEST['notify_url'];
+}
+if (isset($_REQUEST['return_url'])) {
+  $options['returnUrl'] = $_REQUEST['return_url'];
+}
+if (isset($_REQUEST['cancel_url'])) {
+  $options['cancelUrl'] = $_REQUEST['cancel_url'];
+}
 
 $purchase = new Purchase();
 
