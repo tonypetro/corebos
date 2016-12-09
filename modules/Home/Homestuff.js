@@ -56,9 +56,29 @@ function chooseType(typeName){
 		document.getElementById('dashNameRow').style.display="none";
 		document.getElementById('dashTypeRow').style.display="none";
 		document.getElementById('StuffTitleId').style.display="block";
+		document.getElementById('moduleLabelsRow').style.display="none";
+		document.getElementById('moduleCombosRow').style.display="block";
+		document.getElementById('moduleFilters').style.display="block";
+		document.getElementById('filterby').style.display="table-cell";
+		document.getElementById('filterbyim').style.display="none";
+		document.getElementById('selModFilter_id').style.display="table-cell";
 		document.getElementById('homewidget').style.display="none";
 		document.getElementById('reportNameRow').style.display="none";
 		document.getElementById('reportTypeRow').style.display="none";
+		//document.getElementById('homeURLField').style.display = "none";
+	} else if (typeName=='CustomWidget') {
+		document.getElementById('moduleNameRow').style.display="block";
+		document.getElementById('showrow').style.display="none";
+		document.getElementById('rssRow').style.display="none";
+		document.getElementById('dashNameRow').style.display="none";
+		document.getElementById('dashTypeRow').style.display="none";
+		document.getElementById('StuffTitleId').style.display="block";
+		document.getElementById('moduleLabelsRow').style.display="block";
+		document.getElementById('moduleCombosRow').style.display="block";
+		document.getElementById('moduleFilters').style.display="block";
+		document.getElementById('filterbyim').style.display="table-cell";
+		document.getElementById('filterby').style.display="none";
+		document.getElementById('selModFilter_id').style.display="table-cell";
 		//document.getElementById('homeURLField').style.display = "none";
 	}else if(typeName=='DashBoard'){
 		document.getElementById('moduleNameRow').style.display="none";
@@ -69,6 +89,9 @@ function chooseType(typeName){
 		document.getElementById('dashNameRow').style.display="block";
 		document.getElementById('dashTypeRow').style.display="block";
 		document.getElementById('StuffTitleId').style.display="block";
+		document.getElementById('moduleLabelsRow').style.display="none";
+		document.getElementById('moduleCombosRow').style.display="none";
+		document.getElementById('moduleFilters').style.display="none";
 		document.getElementById('reportNameRow').style.display="none";
         document.getElementById('reportTypeRow').style.display="none";
 		document.getElementById('homewidget').style.display="none";
@@ -93,6 +116,9 @@ function chooseType(typeName){
 		document.getElementById('dashNameRow').style.display="none";
 		document.getElementById('dashTypeRow').style.display="none";
 		document.getElementById('StuffTitleId').style.display="block";
+		document.getElementById('moduleLabelsRow').style.display="none";
+		document.getElementById('moduleCombosRow').style.display="none";
+		document.getElementById('moduleFilters').style.display="none";
 		document.getElementById('homewidget').style.display="none";
 		document.getElementById('vtbusy_info').style.display="none";
 		document.getElementById('reportNameRow').style.display="none";
@@ -107,6 +133,9 @@ function chooseType(typeName){
 		document.getElementById('dashNameRow').style.display="none";
 		document.getElementById('dashTypeRow').style.display="none";
 		document.getElementById('StuffTitleId').style.display="none";
+		document.getElementById('moduleLabelsRow').style.display="none";
+		document.getElementById('moduleCombosRow').style.display="none";
+		document.getElementById('moduleFilters').style.display="none";
 		document.getElementById('homewidget').style.display="none";
 		document.getElementById('url_id').style.display = "none";
 		document.getElementById('reportNameRow').style.display="none";
@@ -120,6 +149,9 @@ function chooseType(typeName){
 		document.getElementById('dashNameRow').style.display="none";
 		document.getElementById('dashTypeRow').style.display="none";
 		document.getElementById('StuffTitleId').style.display="block";
+		document.getElementById('moduleLabelsRow').style.display="none";
+		document.getElementById('moduleCombosRow').style.display="none";
+		document.getElementById('moduleFilters').style.display="none";
 		document.getElementById('vtbusy_info').style.display="none";
 		document.getElementById('homewidget').style.display="none";
 		document.getElementById('reportNameRow').style.display="none";
@@ -133,6 +165,9 @@ function chooseType(typeName){
 		document.getElementById('rssRow').style.display="none";
 		document.getElementById('showrow').style.display="none";
 		document.getElementById('StuffTitleId').style.display="block";
+		document.getElementById('moduleLabelsRow').style.display="none";
+		document.getElementById('moduleCombosRow').style.display="none";
+		document.getElementById('moduleFilters').style.display="none";
 		document.getElementById('reportNameRow').style.display="block";
 		document.getElementById('reportTypeRow').style.display="block";
 		document.getElementById('vtbusy_info').style.display="none";
@@ -479,7 +514,7 @@ function frmValidate(){
 				return false;
 			}
 		}*/
-		if(document.getElementById('stufftype_id').value=="Module"){
+		if(document.getElementById('stufftype_id').value=="Module" || document.getElementById('stufftype_id').value=="CustomWidget"){
 			var selLen;
 			var fieldval=new Array();
 			var cnt=0;
@@ -503,6 +538,7 @@ function frmValidate(){
 		document.getElementById('stufftitle_id').value = '';
 		var selFiltername='';
 		var fldname='';
+		var selAggregatename='';
 		var selmodule='';
 		var maxentries='';
 		var txtRss='';
@@ -518,6 +554,11 @@ function frmValidate(){
 			fldname = fieldval;
 			selmodule =document.getElementById('selmodule_id').value;
 			maxentries =document.getElementById('maxentryid').value;
+		} else if (stufftype=="CustomWidget") {
+			fldname = fieldval;
+			selFiltername =document.Homestuff.selFiltername[document.Homestuff.selFiltername.selectedIndex].value;
+			selmodule =document.getElementById('selmodule_id').value;
+			selAggregatename =document.getElementById('selAggregateid').value;
 		}else if(stufftype=="RSS"){
 			txtRss=document.getElementById('txtRss_id').value;
 			maxentries =document.getElementById('maxentryid').value;
@@ -529,12 +570,12 @@ function frmValidate(){
 		}else if(stufftype=="Default"){
 			seldeftype=document.Homestuff.seldeftype[document.Homestuff.seldeftype.selectedIndex].value;
 		}
-	else if(stufftype=="ReportCharts"){
-		selreport = document.getElementById('selreportchart_id').value;
-		selreportcharttype = document.getElementById('selreportcharttype_id').value;
-	}
+		else if(stufftype=="ReportCharts"){
+			selreport = document.getElementById('selreportchart_id').value;
+			selreportcharttype = document.getElementById('selreportcharttype_id').value;
+		}
 
-	var url="stufftype="+stufftype+"&stufftitle="+stufftitle+"&selmodule="+selmodule+"&maxentries="+maxentries+"&selFiltername="+selFiltername+"&fldname="+encodeURIComponent(fldname)+"&txtRss="+txtRss+"&seldashbd="+seldashbd+"&seldashtype="+seldashtype+"&seldeftype="+seldeftype+"&selreport="+selreport+"&selreportcharttype="+selreportcharttype;//+'&txtURL='+txtURL;
+		var url="stufftype="+stufftype+"&stufftitle="+stufftitle+"&selmodule="+selmodule+"&maxentries="+maxentries+"&selFiltername="+selFiltername+"&selAggregatename="+selAggregatename+"&fldname="+encodeURIComponent(fldname)+"&txtRss="+txtRss+"&seldashbd="+seldashbd+"&seldashtype="+seldashtype+"&seldeftype="+seldeftype+"&selreport="+selreport+"&selreportcharttype="+selreportcharttype;//+'&txtURL='+txtURL;
 		var stuffarr=new Array();
 		document.getElementById('vtbusy_info').style.display="inline";
 

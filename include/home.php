@@ -65,7 +65,20 @@ class Homestuff{
 			if(!$result){
 				return false;
 			}
-		}else if($this->stufftype=="RSS"){
+		} else if($this->stufftype=='CustomWidget') {
+			$stuffid=$adb->getUniqueId('vtiger_homestuff');
+			$fieldarray=explode(",",$this->fieldvalue);
+			$querymod="insert into vtiger_home_customwidget (modulename,setype) values(?,?)";
+			$params = array($this->selmodule,$this->selmodule);
+			$result=$adb->pquery($querymod, $params);
+			if(!$result) return false;
+			$queryfld="insert into vtiger_home_cw_fields (filtername,aggregate,field) values (?,?,?);";
+			$params = array($this->selFiltername,$this->selAggregatename,$fieldarray[0]);
+			$result=$adb->pquery($queryfld, $params);
+			if(!$result) {
+				return false;
+			}
+		} else if($this->stufftype=="RSS"){
 			$queryrss="insert into vtiger_homerss values(?,?,?)";
 			$params = array($stuffid,$this->txtRss,$this->maxentries);
 			$resultrss=$adb->pquery($queryrss, $params);
@@ -213,6 +226,15 @@ class Homestuff{
 		return $homeval;
 	}
 
+	function addCustomWidgetFilter() {
+		global $adb;
+		$fieldarray=explode(",",$this->fieldvalue);
+		$queryfld = 'insert into vtiger_home_cw_fields (filtername,aggregate,field) values(?,?,?)';
+		$params = array($this->selFiltername,$this->selAggregatename,$fieldarray[0]);
+		$result=$adb->pquery($queryfld, $params);
+		if(!$result) return false;
+	}
+
 	/**
 	 * this function only returns the widget contents for a given widget
 	 */
@@ -224,6 +246,8 @@ class Homestuff{
 			$details=$this->getModuleFilters($sid);
 		}else if($stuffType=="RSS"){
 			$details=$this->getRssDetails($sid);
+		} else if ($stuffType=="CustomWidget") {
+			$details=$this->getCWDetails($sid);
 		}else if($stuffType=="DashBoard" && vtlib_isModuleActive("Dashboard")){
 			$details=$this->getDashDetails($sid);
 		}else if($stuffType=="Default"){
@@ -233,6 +257,109 @@ class Homestuff{
 			$details = $this->getReportChartDetails($sid);
 		}
 		return $details;
+	}
+
+	private function getCWDetails($sid) {
+		$list=array();
+		global $dbconfig, $adb, $current_user;
+		$querycvid="select vtiger_home_cw_fields.filtername,vtiger_home_cw_fields.aggregate,vtiger_home_cw_fields.field, vtiger_home_customwidget.modulename from vtiger_home_cw_fields
+			left join vtiger_home_customwidget on vtiger_home_customwidget.stuffid=vtiger_home_cw_fields.stuffid
+			where vtiger_home_cw_fields.stuffid=?";
+
+		$resultcvid=$adb->pquery($querycvid, array($sid));
+		$nr=$adb->num_rows($resultcvid);
+
+		if(isPermitted($modname,'index') == "yes") {
+		for ($i=0;$i<$nr;$i++) {
+			$list[$i]=array();
+			$modname=$adb->query_result($resultcvid,$i,"modulename");
+			$aggr=$adb->query_result($resultcvid,$i,"aggregate");
+			$cvid=$adb->query_result($resultcvid,$i,"filtername");
+			$column_count = $adb->num_rows($resultcvid);
+			$cvid_check_query = $adb->pquery("SELECT * FROM vtiger_customview WHERE cvid = ?",array($cvid));
+			if($adb->num_rows($cvid_check_query)>0) {
+				$focus = CRMEntity::getInstance($modname);
+
+				$oCustomView = new CustomView($modname);
+				$listquery = getListQuery($modname);
+				if(trim($listquery) == '') {
+					$listquery = $focus->getListQuery($modname);
+				}
+				$query = $oCustomView->getModifiedCvListQuery($cvid,$listquery,$modname);
+				$count_result = $adb->query(mkCountQuery($query));
+				$noofrows = $adb->query_result($count_result,0,"count");
+
+				//To get the current language file
+				global $current_language,$app_strings;
+				$fieldmod_strings = return_module_language($current_language, $modname);
+
+				if($modname == 'Calendar'){
+					$query .= "AND vtiger_activity.activitytype NOT IN ('Emails')";
+				}
+
+				for($l=0;$l < $column_count;$l++){
+					$fieldinfo = $adb->query_result($resultcvid,$i,"field");
+
+					list($tabname,$colname,$fldname,$fieldmodlabel) = explode(":",$fieldinfo);
+
+					$fieldheader=explode("_",$fieldmodlabel,2);
+					$fldlabel=$fieldheader[1];
+
+					$pos=strpos($fldlabel,"_");
+
+					if($pos==true){
+						$fldlabel=str_replace("_"," ",$fldlabel);
+					}
+					$field_label = isset($app_strings[$fldlabel])?$app_strings[$fldlabel]:(isset($fieldmod_strings[$fldlabel])?$fieldmod_strings[$fldlabel]:$fldlabel);
+					$cv_presence = $adb->pquery("SELECT * from vtiger_cvcolumnlist WHERE cvid = ? and columnname LIKE '%".$fldname."%'", array($cvid));
+					if($is_admin == false){
+						$fld_permission = getFieldVisibilityPermission($modname,$current_user->id,$fldname);
+					}
+					if($fld_permission == 0 && $adb->num_rows($cv_presence)){
+						$field_query = $adb->pquery("SELECT fieldlabel FROM vtiger_field WHERE fieldname = ? AND tablename = ? and vtiger_field.presence in (0,2)", array($fldname,$tabname));
+						$field_label = $adb->query_result($field_query,0,'fieldlabel');
+					}
+					$fieldcolumns[$fldlabel] = Array($tabname=>$colname);
+				}
+
+				$func=$aggr."(".$colname.")";
+				$func1=$aggr."(".$tabname.".".$colname.")";
+				$cvid_ch =$adb->query_result($adb->pquery("SELECT viewname FROM vtiger_customview WHERE cvid = ?",array($cvid)),0);
+				$c1 =$adb->query_result($adb->pquery("SELECT entitytype FROM vtiger_customview where cvid= ?",array($cvid)),0);
+				$tab2 =$adb->query_result($adb->pquery("SELECT modulename FROM vtiger_entityname where modulename= ?",array($c1)),0);
+				$c=$tabname.".".$colname;
+				$listquery = getListQuery($tab2);
+				$query = $oCustomView->getModifiedCvListQuery($cvid,$listquery,$tab2);
+				switch($aggr) {
+					case "sum":    $count_result = $adb->query( mkSumQuery( $query,$c));  break;
+					case "min":    $count_result = $adb->query( mkMinQuery( $query,$c));  break;
+					case "max":    $count_result = $adb->query( mkMaxQuery( $query,$c));  break;
+					case "count":  $count_result = $adb->query( mkContQuery( $query));  break;
+					case "avg":    $count_result = $adb->query( mkAvgQuery( $query,$c));  break;
+				}
+				
+				$r=substr($count_result,3);
+				if (trim($r)===',') $r='-';
+				$list[$i][]=$cvid_ch;
+				$list[$i][]=$aggr."(".$field_label.")";
+				$list[$i][]=$r;
+			} else {
+				echo "<font color='red'>Filter You have Selected is Not Found</font>";
+			}
+		}
+		} else {
+			echo "<font color='red'>Permission Denied</font>";
+		}
+		$header[]=$app_strings['LBL_HOME_METRICS'];
+		$header[]="Aggregate(Field)";
+		$header[]="Value";
+
+		$return_value =Array('ModuleName'=>$modname,'cvid'=>$cvid,'Header'=>$header,'Entries'=>$list);
+		if(sizeof($header)!=0){
+			return $return_value;
+		}else{
+			echo "Fields not found in Selected Filter";
+		}
 	}
 
 	/**

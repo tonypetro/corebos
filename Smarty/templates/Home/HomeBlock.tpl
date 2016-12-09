@@ -84,6 +84,42 @@
 	{/if}
 	</table>
 
+{elseif $HOME_STUFFTYPE eq "CustomWidget"}
+	<input type=hidden id=more_{$HOME_STUFFID} value="{$HOME_STUFF.ModuleName}"/>
+	<input type=hidden id=cvid_{$HOME_STUFFID} value="{$HOME_STUFF.cvid}">
+	<table border=0 cellspacing=0 cellpadding=2 width=100%>
+	{assign var='cvid' value=$HOME_STUFF.cvid}
+	{assign var='modulename' value=$HOME_STUFF.ModuleName}
+	<tr>
+		<td width=5%>
+			&nbsp;
+		</td>
+		{foreach item=header from=$HOME_STUFF.Header}
+		<td width=39% align="left">
+			<b>{$header}</b>
+		</td>
+		{/foreach}
+	</tr>
+
+
+		{foreach item=row key=crmid from=$HOME_STUFF.Entries}
+       <tr><td width=5%>
+			&nbsp;
+		</td>
+
+			{foreach item=element from=$row}
+	   <td align="left" nowrap width=39%>
+			{$element}
+	  </td>
+			{/foreach}
+</tr>
+		{/foreach}
+
+	</table>
+
+
+
+
 {elseif $HOME_STUFFTYPE eq "Default"}
 	<input type=hidden id=more_{$HOME_STUFFID} value="{$HOME_STUFF.Details.ModuleName}"/>
 	<table border=0 cellspacing=0 cellpadding=2 width=100%>

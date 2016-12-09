@@ -65,6 +65,7 @@ $mod_strings = Array(
 
 //ADDED for Home Page Customization
 'LBL_HOME_MODULE' => 'Module',
+'LBL_HOME_CUSTOM_WIDGET' => 'Custom Widget',
 'LBL_HOME_RSS' => 'RSS',
 'LBL_HOME_DASHBOARD' => 'Dashboard',
 'LBL_HOME_STUFFTITLE'=>'Window Title',
@@ -72,6 +73,10 @@ $mod_strings = Array(
 'LBL_HOME_FILTERBY'=>'Filter By',
 'LBL_HOME_Fields'=>'Fields To Show <br>(select any two)',
 'LBL_HOME_PRESSCTRL'=>'(Press "Ctrl" <br> for multiple selection)',
+
+'LBL_HOME_AGGREGATE'=>'Aggregate',
+'LBL_HOME_AG_FIELDS'=>'On field',
+
 'LBL_HOME_RSSURL'=>'RSS URL',
 'LBL_HOME_DASHBOARD_NAME'=>'DashBoard Name', 
 'LBL_HOME_DASHBOARD_TYPE'=>'DashBoard Type',
