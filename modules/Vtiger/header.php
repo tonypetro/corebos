@@ -22,7 +22,10 @@ $theme_path="themes/".$theme."/";
 $image_path=$theme_path."images/";
 $userName = getFullNameFromArray('Users', $current_user->column_fields);
 $smarty = new vtigerCRM_Smarty;
-$header_array = getHeaderArray();
+require_once('modules/evvtMenu/evvtMenu.inc');
+$smarty->assign('MENU', getMenuJSON(getMenuArray(0)));
+$smarty->assign('evvtAdminMenu', getAdminevvtMenu());
+$header_array = getAdminevvtMenu();
 $smarty->assign("HEADERS",$header_array);
 $smarty->assign("THEME",$theme);
 $smarty->assign("IMAGEPATH",$image_path);
@@ -45,7 +48,6 @@ $smarty->assign("CURRENT_USER_ID", $current_user->id);
 $smarty->assign("MODULELISTS",$app_list_strings['moduleList']);
 $smarty->assign("CATEGORY",getParentTab());
 $smarty->assign("CALC",get_calc($image_path));
-$smarty->assign("MENUSTRUCTURE",getMenuStructure($currentModule));
 $smarty->assign("ANNOUNCEMENT",get_announcements());
 $smarty->assign("USE_ASTERISK", get_use_asterisk($current_user->id));
 
@@ -90,7 +92,7 @@ $cnorg=$adb->getColumnNames('vtiger_organizationdetails');
 if (!in_array('faviconlogo', $cnorg)) {
 	$adb->query('ALTER TABLE `vtiger_organizationdetails` ADD `frontlogo` VARCHAR(150) NOT NULL, ADD `faviconlogo` VARCHAR(150) NOT NULL');
 }
-$sql="select * from vtiger_organizationdetails";
+$sql='select * from vtiger_organizationdetails limit 1';
 $result = $adb->pquery($sql, array());
 //Handle for allowed organization logo/logoname likes UTF-8 Character
 // $organization_logo = decode_html($adb->query_result($result,0,'logoname'));

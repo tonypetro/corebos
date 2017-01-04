@@ -62,6 +62,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Application_UI_Name',
 				'Application_UI_Version',
 				'Application_UI_URL',
+				'Application_Group_Selection_Permitted',
 
 				'Calendar_Modules_Panel_Visible',
 				'Calendar_Default_Reminder_Minutes',
@@ -120,6 +121,8 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Report_Send_Scheduled_ifEmpty',
 				'Report_ListView_PageSize',
 				'Report_MaxRows_OnScreen',
+
+				'Inventory_ListPrice_ReadOnly',
 
 				'Maximum_Scheduled_Workflows', // rename to Workflow_Maximum_Scheduled_Workflows
 				'Billing_Address_Checked', // rename to Application_Billing_Address_Checked

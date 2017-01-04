@@ -146,7 +146,7 @@ class Contacts extends CRMEntity {
 	 *  Returns the results of query in array format
 	 */
 	function plugin_process_list_query($query) {
-		global $log, $adb, $current_user;
+		global $log, $adb, $current_user,$currentModule;
 		$log->debug("Entering plugin_process_list_query(" . $query . ") method ...");
 		$permitted_field_lists = Array();
 		require ('user_privileges/user_privileges_' . $current_user->id . '.php');
@@ -167,7 +167,7 @@ class Contacts extends CRMEntity {
 			$permitted_field_lists[] = $adb->query_result($result1, $i, 'columnname');
 		}
 
-		$result = &$this->db->query($query, true, "Error retrieving $this->object_name list: ");
+		$result = &$this->db->query($query, true, "Error retrieving $currentModule list: ");
 		$list = Array();
 		$rows_found = $this->db->getRowCount($result);
 		if ($rows_found != 0) {
@@ -1252,10 +1252,9 @@ function get_contactsforol($user_name)
 		$portalURL = '<a href="'.$PORTAL_URL.'" style="font-family:Arial, Helvetica, sans-serif;font-size:12px; font-weight:bolder;text-decoration:none;color: #4242FD;">'.getTranslatedString('Please Login Here', $moduleName).'</a>';
 
 		//here id is hardcoded with 5. it is for support start notification in vtiger_notificationscheduler
-		$query='SELECT vtiger_emailtemplates.subject,vtiger_emailtemplates.body
-				FROM vtiger_notificationscheduler
-				INNER JOIN vtiger_emailtemplates ON vtiger_emailtemplates.templateid=vtiger_notificationscheduler.notificationbody
-				WHERE schedulednotificationid=5';
+		$query='SELECT subject,body
+				FROM vtiger_emailtemplates
+				WHERE templateid=10';
 
 		$result = $adb->pquery($query, array());
 		$body=$adb->query_result($result,0,'body');

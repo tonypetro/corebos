@@ -18,6 +18,7 @@
 {if $PICKIST_DEPENDENCY_DATASOURCE neq ''}
 <script type="text/javascript">
 	jQuery(document).ready(function() {ldelim} (new FieldDependencies({$PICKIST_DEPENDENCY_DATASOURCE})).init() {rdelim});
+	var Inventory_ListPrice_ReadOnly = '{$Inventory_ListPrice_ReadOnly}';
 </script>
 {/if}
 
@@ -39,14 +40,7 @@
 			{/if}
 			{if $OP_MODE eq 'create_view'}
 				{if $DUPLICATE neq 'true'}
-					{assign var=create_new value="LBL_CREATING_NEW_"|cat:$SINGLE_MOD}
-					{* vtlib customization: use translation only if present *}
-					{assign var="create_newlabel" value=$APP.$create_new}
-					{if $create_newlabel neq ''}
-						<span class="lvtHeaderText">{$create_newlabel}</span> <br>
-					{else}
-						<span class="lvtHeaderText">{$APP.LBL_CREATING} {$APP.LBL_NEW} {$SINGLE_MOD|@getTranslatedString:$MODULE}</span> <br>
-					{/if}
+					<span class="lvtHeaderText">{$APP.LBL_CREATING} {$APP.LBL_NEW} {$SINGLE_MOD|@getTranslatedString:$MODULE}</span> <br>
 				{else}
 					<span class="lvtHeaderText">{$APP.LBL_DUPLICATING} "{$NAME}" </span> <br>
 				{/if}
@@ -57,7 +51,7 @@
 			{include file='EditViewHidden.tpl'}
 			{if $OP_MODE eq 'create_view'}
 				<input type="hidden" name="convert_from" value="{$CONVERT_MODE}">
-				<input type="hidden" name="duplicate_from" value="{$DUPLICATE_FROM}">
+				<input type="hidden" name="duplicate_from" value="{if isset($DUPLICATE_FROM)}{$DUPLICATE_FROM}{/if}">
 			{/if}
 			<input name='search_url' id="search_url" type='hidden' value='{$SEARCH}'>
 
@@ -130,7 +124,7 @@
 									   <tr>
 										<td colspan=4>
 										{if $OP_MODE eq 'create_view'}
-											{if $AVAILABLE_PRODUCTS eq 'true'}
+											{if isset($AVAILABLE_PRODUCTS) && $AVAILABLE_PRODUCTS eq 'true'}
 												{include file="Inventory/ProductDetailsEditView.tpl"}
 											{else}
 												{include file="Inventory/ProductDetails.tpl"}

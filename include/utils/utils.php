@@ -1,16 +1,12 @@
 <?php
-/*********************************************************************************
- * The contents of this file are subject to the SugarCRM Public License Version 1.1.2
- * ("License"); You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at http://www.sugarcrm.com/SPL
- * Software distributed under the License is distributed on an  "AS IS"  basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
- * the specific language governing rights and limitations under the License.
- * The Original Code is:  SugarCRM Open Source
- * The Initial Developer of the Original Code is SugarCRM, Inc.
- * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc.;
+/*+**********************************************************************************
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.0
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is:  vtiger CRM Open Source
+ * The Initial Developer of the Original Code is vtiger.
+ * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
- ********************************************************************************/
+ ************************************************************************************/
 require_once('include/utils/Session.php');
 require_once('include/database/PearDatabase.php');
 require_once('include/events/include.inc');
@@ -57,7 +53,7 @@ define("RB_RECORD_UPDATED", 'update');
  * @returns array with the variables
  */
 function getBrowserVariables(&$smarty) {
-	global $currentModule,$current_user,$default_charset,$theme,$adb;
+	global $currentModule,$current_user,$default_charset,$theme,$adb,$current_language;
 	$vars = array();
 	$vars['gVTModule'] = $currentModule;
 	$vars['gVTTheme']  = $theme;
@@ -97,6 +93,7 @@ function getBrowserVariables(&$smarty) {
 		$smarty->assign('USER_CURRENCY_SEPARATOR', $vars['userCurrencySeparator']);
 		$smarty->assign('USER_DECIMAL_FORMAT', $vars['userDecimalSeparator']);
 		$smarty->assign('USER_NUMBER_DECIMALS', $vars['userNumberOfDecimals']);
+		$smarty->assign('USER_LANGUAGE', $current_language);
 	}
 }
 
@@ -396,16 +393,14 @@ function return_app_list_strings_language($language)
 {
 	global $log;
 	$log->debug("Entering return_app_list_strings_language(".$language.") method ...");
-	global $app_list_strings, $default_language, $log, $translation_string_prefix;
+	global $app_list_strings, $default_language, $log;
 	$temp_app_list_strings = $app_list_strings;
-	$language_used = $language;
 
 	@include("include/language/$language.lang.php");
 	if(!isset($app_list_strings))
 	{
 		$log->warn("Unable to find the application language file for language: ".$language);
 		require("include/language/$default_language.lang.php");
-		$language_used = $default_language;
 	}
 
 	if(!isset($app_list_strings))
@@ -428,7 +423,7 @@ function return_app_list_strings_language($language)
 function return_app_currency_strings_language($language) {
 	global $log;
 	$log->debug("Entering return_app_currency_strings_language(".$language.") method ...");
-	global $app_currency_strings, $default_language, $log, $translation_string_prefix;
+	global $app_currency_strings, $default_language, $log;
 	// Backup the value first
 	$temp_app_currency_strings = $app_currency_strings;
 	@include("include/language/$language.lang.php");
@@ -436,7 +431,6 @@ function return_app_currency_strings_language($language) {
 	{
 		$log->warn("Unable to find the application language file for language: ".$language);
 		require("include/language/$default_language.lang.php");
-		$language_used = $default_language;
 	}
 	if(!isset($app_currency_strings))
 	{
@@ -461,9 +455,8 @@ function return_application_language($language)
 {
 	global $log;
 	$log->debug("Entering return_application_language(".$language.") method ...");
-	global $app_strings, $default_language, $log, $translation_string_prefix;
+	global $app_strings, $default_language, $log;
 	$temp_app_strings = $app_strings;
-	$language_used = $language;
 
 	checkFileAccessForInclusion("include/language/$language.lang.php");
 	@include("include/language/$language.lang.php");
@@ -471,7 +464,6 @@ function return_application_language($language)
 	{
 		$log->warn("Unable to find the application language file for language: ".$language);
 		require("include/language/$default_language.lang.php");
-		$language_used = $default_language;
 	}
 
 	if(!isset($app_strings))
@@ -479,15 +471,6 @@ function return_application_language($language)
 		$log->fatal("Unable to load the application language file for the selected language($language) or the default language($default_language)");
 		$log->debug("Exiting return_application_language method ...");
 		return null;
-	}
-
-	// If we are in debug mode for translating, turn on the prefix now!
-	if($translation_string_prefix)
-	{
-		foreach($app_strings as $entry_key=>$entry_value)
-		{
-			$app_strings[$entry_key] = $language_used.' '.$entry_value;
-		}
 	}
 
 	$return_value = $app_strings;
@@ -502,7 +485,7 @@ function return_application_language($language)
  * All Rights Reserved.
  * If you are in the current module, do not call this function unless you are loading it for the first time */
 function return_module_language($language, $module) {
-	global $mod_strings, $default_language, $log, $currentModule, $translation_string_prefix;
+	global $mod_strings, $default_language, $log, $currentModule;
 	$log->debug("Entering return_module_language(".$language.",". $module.") method ...");
 	if ($module == 'Events') $module = 'Calendar';
 	static $cachedModuleStrings = array();
@@ -513,7 +496,6 @@ function return_module_language($language, $module) {
 	}
 
 	$temp_mod_strings = $mod_strings;
-	$language_used = $language;
 
 	@include("modules/$module/language/$language.lang.php");
 	if(!isset($mod_strings))
@@ -521,14 +503,11 @@ function return_module_language($language, $module) {
 		$log->warn("Unable to find the module language file for language: ".$language." and module: ".$module);
 		if($default_language == 'en_us') {
 			require("modules/$module/language/$default_language.lang.php");
-			$language_used = $default_language;
 		} else {
 			@include("modules/$module/language/$default_language.lang.php");
 			if(!isset($mod_strings)) {
 				require("modules/$module/language/en_us.lang.php");
-				$language_used = 'en_us';
 			} else {
-				$language_used = $default_language;
 			}
 		}
 	}
@@ -538,15 +517,6 @@ function return_module_language($language, $module) {
 		$log->fatal("Unable to load the module($module) language file for the selected language($language) or the default language($default_language)");
 		$log->debug("Exiting return_module_language method ...");
 		return null;
-	}
-
-	// If we are in debug mode for translating, turn on the prefix now!
-	if($translation_string_prefix)
-	{
-		foreach($mod_strings as $entry_key=>$entry_value)
-		{
-			$mod_strings[$entry_key] = $language_used.' '.$entry_value;
-		}
 	}
 
 	$return_value = $mod_strings;
@@ -560,14 +530,13 @@ function return_module_language($language, $module) {
 /*This function returns the mod_strings for the current language and the specified module */
 function return_specified_module_language($language, $module)
 {
-	global $log, $default_language, $translation_string_prefix;
+	global $log, $default_language;
 
 	@include("modules/$module/language/$language.lang.php");
 	if(!isset($mod_strings))
 	{
 		$log->warn("Unable to find the module language file for language: ".$language." and module: ".$module);
 		require("modules/$module/language/$default_language.lang.php");
-		$language_used = $default_language;
 	}
 
 	if(!isset($mod_strings))
@@ -591,16 +560,13 @@ function return_theme_language($language, $theme)
 {
 	global $log;
 	$log->debug("Entering return_theme_language(".$language.",". $theme.") method ...");
-	global $mod_strings, $default_language, $log, $currentModule, $translation_string_prefix;
-
-	$language_used = $language;
+	global $mod_strings, $default_language, $log, $currentModule;
 
 	@include("themes/$theme/language/$current_language.lang.php");
 	if(!isset($theme_strings))
 	{
 		$log->warn("Unable to find the theme file for language: ".$language." and theme: ".$theme);
 		require("themes/$theme/language/$default_language.lang.php");
-		$language_used = $default_language;
 	}
 
 	if(!isset($theme_strings))
@@ -608,15 +574,6 @@ function return_theme_language($language, $theme)
 		$log->fatal("Unable to load the theme($theme) language file for the selected language($language) or the default language($default_language)");
 		$log->debug("Exiting return_theme_language method ...");
 		return null;
-	}
-
-	// If we are in debug mode for translating, turn on the prefix now!
-	if($translation_string_prefix)
-	{
-		foreach($theme_strings as $entry_key=>$entry_value)
-		{
-			$theme_strings[$entry_key] = $language_used.' '.$entry_value;
-		}
 	}
 
 	$log->debug("Exiting return_theme_language method ...");
@@ -1997,9 +1954,7 @@ function getEmailParentsList($module,$id,$focus = false)
 
 	$fieldid = 0;
 	$fieldname = 'email';
-	if($focus->column_fields['email'] == '' && $focus->column_fields['yahooid'] != '' )
-		$fieldname = 'yahooid';
-	elseif($focus->column_fields['email'] == '' && $focus->column_fields['secondaryemail'] != '' )
+	if($focus->column_fields['email'] == '' && $focus->column_fields['secondaryemail'] != '' )
 		$fieldname='secondaryemail';
 	$res = $adb->pquery("select * from vtiger_field where tabid = ? and fieldname= ? and vtiger_field.presence in (0,2)", array(getTabid($module), $fieldname));
 	$fieldid = $adb->query_result($res,0,'fieldid');
@@ -3200,6 +3155,7 @@ function getDuplicateQuery($module,$field_values,$ui_type_arr)
 	}
 	else if($module == 'Leads')
 	{
+		$val_conv = ((isset($_COOKIE['LeadConv']) && $_COOKIE['LeadConv'] == 'true') ? 1 : 0);
 		$nquery = "SELECT vtiger_leaddetails.leadid AS recordid, vtiger_users_last_import.deleted,$table_cols
 				FROM vtiger_leaddetails
 				INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid=vtiger_leaddetails.leadid
@@ -3217,10 +3173,10 @@ function getDuplicateQuery($module,$field_values,$ui_type_arr)
 						LEFT JOIN vtiger_leadscf ON vtiger_leadscf.leadid=vtiger_leaddetails.leadid
 						LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
 						LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid
-						WHERE vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted = 0 $sec_parameter
+						WHERE vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted = $val_conv $sec_parameter
 						GROUP BY $table_cols HAVING COUNT(*)>1) as temp
 				ON ".get_on_clause($field_values,$ui_type_arr,$module) ."
-				WHERE vtiger_crmentity.deleted=0  AND vtiger_leaddetails.converted = 0 $sec_parameter ORDER BY $table_cols,vtiger_leaddetails.leadid ASC";
+				WHERE vtiger_crmentity.deleted=0  AND vtiger_leaddetails.converted = $val_conv $sec_parameter ORDER BY $table_cols,vtiger_leaddetails.leadid ASC";
 
 	}
 	else if($module == 'Products')
@@ -3531,10 +3487,9 @@ function getDuplicateRecordsArr($module)
 	$gro="group";
 	for($i=0;$i<$no_rows;$i++)
 	{
-		$ii=0;
-		$dis_group[]=$fld_values[$gro.$i][$ii];
+		if (empty($fld_values[$gro.$i])) continue;
+		$dis_group[]=$fld_values[$gro.$i][0];
 		$count_group[$i]=count($fld_values[$gro.$i]);
-		$ii++;
 		$new_group[]=$dis_group[$i];
 	}
 	$fld_nam=$new_group[0];
@@ -3683,11 +3638,11 @@ function getFieldValues($module)
 		$table_col = $tablename.".".$column_name;
 		if(getFieldVisibilityPermission($module,$current_user->id,$field_name) == 0)
 		{
-			$fld_name = ($special_fld_arr[$field_name] != '')?$special_fld_arr[$field_name]:$field_name;
+			$fld_name = (!empty($special_fld_arr[$field_name]))?$special_fld_arr[$field_name]:$field_name;
 
 			$fld_arr[] = $fld_name;
 			$col_arr[] = $column_name;
-			if($fld_table_arr[$table_col] != '')
+			if(!empty($fld_table_arr[$table_col]))
 				$table_col = $fld_table_arr[$table_col];
 
 			$field_values_array['fieldnames_list'][] = $table_col . "." . $fld_name;
@@ -4607,7 +4562,7 @@ function getBlockName($blockid) {
 }
 
 function validateAlphaNumericInput($string){
-	preg_match('/^[\w _\-\/]+$/', $string, $matches);
+	preg_match('/^[\w \-\/]+$/', $string, $matches);
 	if(count($matches) == 0) {
 		return false;
 	}

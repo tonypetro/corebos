@@ -691,6 +691,7 @@ $mod_strings = array (
       'LBL_ACTION'=>'Acción',
       'LBL_CREATE'=>'Crear',
       'LBL_TICKET'=>'Ticket',
+      'LBL_PROJECT'=>'Proyecto',
       'LBL_ADD'=>'Agregar',
     
       'LBL_CONTACT'=>'Contacto',
@@ -784,6 +785,7 @@ $mod_strings = array (
       'ASTERISK_CONFIGURATION'=>'Configuración Asterisk',
       //softphone integration ends
 
+	'LBL_SELECT_FIELD_TO_MOVE' => 'Selecciona el campo a mover',
       'VTLIB_LBL_SELECT_PACKAGE_FILE'=>'Selecciona el Módulo Empaquetado',
       'VTLIB_LBL_FILE_LOCATION'=>'Cargar archivo:',
       'VTLIB_LBL_PACKAGE_URL' => 'Instalar desde URL:',

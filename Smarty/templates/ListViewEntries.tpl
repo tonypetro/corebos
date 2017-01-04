@@ -22,7 +22,7 @@
 	<input name="step" type="hidden">
 	<input name="excludedRecords" type="hidden" id="excludedRecords" value="">
 	<input name="numOfRows" id="numOfRows" type="hidden" value="">
-	<input name="allids" type="hidden" id="allids" value="{$ALLIDS}">
+	<input name="allids" type="hidden" id="allids" value="{if isset($ALLIDS)}{$ALLIDS}{/if}">
 	<input name="selectedboxes" id="selectedboxes" type="hidden" value="{$SELECTEDIDS}">
 	<input name="allselectedboxes" id="allselectedboxes" type="hidden" value="{$ALLSELECTEDIDS}">
 	<input name="current_page_boxes" id="current_page_boxes" type="hidden" value="{$CURRENT_PAGE_BOXES}">
@@ -38,13 +38,13 @@
 								<tr>
 									<td>
 										<!-- Filters -->
-										{if $HIDE_CUSTOM_LINKS neq '1'}
+										{if empty($HIDE_CUSTOM_LINKS) || $HIDE_CUSTOM_LINKS neq '1'}
 										<table cellpadding="5" cellspacing="0" class="small">
 											<tr>
 												<td style="padding-left:5px;padding-right:5px" align="center">
 													<b><font size=2>{$APP.LBL_VIEW}</font></b> <SELECT NAME="viewname" id="viewname" class="small" style="max-width:240px;" onchange="showDefaultCustomView(this,'{$MODULE}','{$CATEGORY}')">{$CUSTOMVIEW_OPTION}</SELECT>
 												</td>
-												{if $ALL eq 'All'}
+												{if isset($ALL) && $ALL eq 'All'}
 												<td style="padding-left:5px;padding-right:5px" align="center"><a href="index.php?module={$MODULE}&action=CustomView&parenttab={$CATEGORY}">{$APP.LNK_CV_CREATEVIEW}</a>
 													<span class="small">|</span>
 													<span class="small" disabled>{$APP.LNK_CV_EDIT}</span>
@@ -123,7 +123,7 @@
 			{foreachelse}
 			<tr>
 			<td style="background-color:#efefef;height:340px" align="center" colspan="{$smarty.foreach.listviewforeach.iteration+1}">
-			<div id="no_entries_found" style="border: 3px solid rgb(153, 153, 153); background-color: rgb(255, 255, 255); width: 45%; position: relative; z-index: 10000000;">
+			<div id="no_entries_found" style="border: 3px solid rgb(153, 153, 153); background-color: rgb(255, 255, 255); width: 45%; position: relative;">
 				{assign var=vowel_conf value='LBL_A'}
 				{if $MODULE eq 'Accounts' || $MODULE eq 'Invoice'}
 					{assign var=vowel_conf value='LBL_AN'}
@@ -199,7 +199,7 @@
 				<td align="right" width=40%>
 					<table border=0 cellspacing=0 cellpadding=0 class="small">
 					<tr>
-						{if $WORDTEMPLATES neq ''}
+						{if !empty($WORDTEMPLATES)}
 							{if $WORDTEMPLATES|@count gt 0}
 								<td>{'LBL_SELECT_TEMPLATE_TO_MAIL_MERGE'|@getTranslatedString:$MODULE}</td>
 								<td style="padding-left:5px;padding-right:5px">

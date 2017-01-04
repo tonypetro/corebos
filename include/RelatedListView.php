@@ -75,7 +75,8 @@ function GetRelatedListBase($module,$relatedmodule,$focus,$query,$button,$return
 		}
 	}
 	if($relatedmodule == 'Leads') {
-		$query .= " AND vtiger_leaddetails.converted = 0";
+		$val_conv = ((isset($_COOKIE['LeadConv']) && $_COOKIE['LeadConv'] == 'true') ? 1 : 0);
+		$query .= " AND vtiger_leaddetails.converted = $val_conv";
 	}
 
 	if(isset($where) && $where != '')
@@ -83,7 +84,7 @@ function GetRelatedListBase($module,$relatedmodule,$focus,$query,$button,$return
 		$query .= ' and '.$where;
 	}
 
-	if(!$_SESSION['rlvs'][$module][$relatedmodule])
+	if(empty($_SESSION['rlvs'][$module][$relatedmodule]))
 	{
 		$modObj = new ListViewSession();
 		$modObj->sortby = $focus->default_order_by;

@@ -1,16 +1,12 @@
 <?php
-/*********************************************************************************
- * The contents of this file are subject to the SugarCRM Public License Version 1.1.2
- * ("License"); You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at http://www.sugarcrm.com/SPL
- * Software distributed under the License is distributed on an  "AS IS"  basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
- * the specific language governing rights and limitations under the License.
- * The Original Code is:  SugarCRM Open Source
- * The Initial Developer of the Original Code is SugarCRM, Inc.
- * Portions created by SugarCRM are Copyright (C) SugarCRM, Inc.;
+/*+**********************************************************************************
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.0
+ * ("License"); You may not use this file except in compliance with the License
+ * The Original Code is:  vtiger CRM Open Source
+ * The Initial Developer of the Original Code is vtiger.
+ * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
- ********************************************************************************/
+ ************************************************************************************/
 require_once('include/database/PearDatabase.php');
 require_once('include/ComboUtil.php');
 require_once('include/utils/CommonUtils.php');
@@ -66,19 +62,17 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			// vtlib customization: For listview javascript triggers
 			$modMetaInfo=getEntityFieldNames($parent_module);
 			$modEName=(is_array($modMetaInfo['fieldname']) ? $modMetaInfo['fieldname'][0] : $modMetaInfo['fieldname']);
-			$vtlib_metainfo = "<span type='vtlib_metainfo' vtrecordid='$parent_id' vtfieldname=".
-					"'$modEName' vtmodule='$parent_module' style='display:none;'></span>";
-			// END
+			$vtlib_metainfo = "<span type='vtlib_metainfo' vtrecordid='$parent_id' vtfieldname='$modEName' vtmodule='$parent_module' style='display:none;'></span>";
 			$label_fld = array($fieldlabel,
 				"<a href='index.php?module=$parent_module&action=DetailView&record=$parent_id' title='$valueTitle'>$displayValue</a>$vtlib_metainfo");
 		} else {
 			$moduleSpecificMessage = 'MODULE_NOT_SELECTED';
-			if ($mod_strings[$moduleSpecificMessage] != "") {
+			if (!empty($mod_strings[$moduleSpecificMessage])) {
 				$moduleSpecificMessage = $mod_strings[$moduleSpecificMessage];
 			}
 			$label_fld = array($fieldlabel, '');
 		}
-	} // END
+	}
 	else if ($uitype == 99) {
 		$label_fld[] = getTranslatedString($fieldlabel, $module);
 		$label_fld[] = $col_fields[$fieldname];
@@ -138,7 +132,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 		}
 
 		$label_fld ["options"] = $options;
-	} elseif ($uitype == 1613) {
+	} elseif ($uitype == 1613 || $uitype == 1614) {
 		require_once 'modules/PickList/PickListUtils.php';
 		$label_fld[] = getTranslatedString($fieldlabel, $module);
 		$label_fld[] = getTranslatedString($col_fields[$fieldname], $module);
@@ -239,7 +233,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			}
 		}
 		$label_fld ["options"] = $options;
-	}elseif ($uitype == 3313) {
+	}elseif ($uitype == 3313 || $uitype == 3314) {
 		require_once 'modules/PickList/PickListUtils.php';
 		$label_fld[] = getTranslatedString($fieldlabel, $module);
 		$label_fld[] = str_ireplace(' |##| ', ', ', $col_fields[$fieldname]);
@@ -303,9 +297,11 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			$label_fld[] = $user_name;
 		}
 		if ($is_admin == false && $profileGlobalPermission[2] == 1 && ($defaultOrgSharingPermission[getTabid($module)] == 3 or $defaultOrgSharingPermission[getTabid($module)] == 0)) {
-			$users_combo = get_select_options_array(get_user_array(FALSE, "Active", $assigned_user_id, 'private'), $assigned_user_id);
+			$ua = get_user_array(FALSE, "Active", $assigned_user_id, 'private');
+			$users_combo = get_select_options_array($ua, $assigned_user_id);
 		} else {
-			$users_combo = get_select_options_array(get_user_array(FALSE, "Active", $user_id), $assigned_user_id);
+			$ua = get_user_array(FALSE, "Active", $user_id);
+			$users_combo = get_select_options_array($ua, $assigned_user_id);
 		}
 		$label_fld ["options"] = $users_combo;
 	} elseif ($uitype == 11) {
@@ -360,6 +356,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 				//$module = $col_fields["record_module"];
 				$label_fld ["options"][] = 'Group';
 				$assigned_group_id = $owner_id;
+				$assigned_user_id = '';
 				$user_checked = '';
 				$team_checked = 'checked';
 				$user_style = 'display:none';
@@ -382,6 +379,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 		}
 		$users_combo = get_select_options_array($user_array, $assigned_user_id);
 
+		$groups_combo = '';
 		if ($noof_group_rows != 0) {
 			if ($fieldname == 'assigned_user_id' && $is_admin == false && $profileGlobalPermission[2] == 1 && ($defaultOrgSharingPermission[getTabid($module)] == 3 or $defaultOrgSharingPermission[getTabid($module)] == 0)) {
 				$group_array = get_group_array(FALSE, "Active", $current_user->id, 'private');
@@ -390,7 +388,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			}
 			$groups_combo = get_select_options_array($group_array, $current_user->id);
 		}
-
+		if (GlobalVariable::getVariable('Application_Group_Selection_Permitted',1)!=1) $groups_combo = '';
 		$label_fld ["options"][] = $users_combo;
 		$label_fld ["options"][] = $groups_combo;
 	} elseif ($uitype == 55 || $uitype == 255) {
@@ -596,6 +594,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			$images = array();
 			$query = 'select productname, vtiger_attachments.path, vtiger_attachments.attachmentsid, vtiger_attachments.name,vtiger_crmentity.setype from vtiger_products left join vtiger_seattachmentsrel on vtiger_seattachmentsrel.crmid=vtiger_products.productid inner join vtiger_attachments on vtiger_attachments.attachmentsid=vtiger_seattachmentsrel.attachmentsid inner join vtiger_crmentity on vtiger_crmentity.crmid = vtiger_attachments.attachmentsid where vtiger_crmentity.setype="Products Image" and productid=?';
 			$result_image = $adb->pquery($query, array($col_fields['record_id']));
+			$image_array = array();
 			for ($image_iter = 0; $image_iter < $adb->num_rows($result_image); $image_iter++) {
 				$image_id_array[] = $adb->query_result($result_image, $image_iter, 'attachmentsid');
 
@@ -1674,21 +1673,15 @@ function getRelatedLists($module, $focus,$restrictedRelations=null) {
 		$actions = $adb->query_result($result, $i, "actions");
 		$relationId = $adb->query_result($result, $i, "relation_id");
 		if ($rel_tab_id != 0) {
-			if ($profileTabsPermission[$rel_tab_id] == 0) {
-				if ($profileActionPermission[$rel_tab_id][3] == 0) {
-					// vtlib customization: Send more information (from module, related module)
-					// to the callee
-					$focus_list[$label] = array('related_tabid' => $rel_tab_id, 'relationId' =>
-						$relationId, 'actions' => $actions);
-					// END
+			if ($is_admin || $profileTabsPermission[$rel_tab_id] == 0) {
+				if ($is_admin || $profileActionPermission[$rel_tab_id][3] == 0) {
+					// vtlib customization: Send more information (from module, related module) to the callee
+					$focus_list[$label] = array('related_tabid' => $rel_tab_id, 'relationId' => $relationId, 'actions' => $actions);
 				}
 			}
 		} else {
-			// vtlib customization: Send more information (from module, related module)
-			// to the callee
-			$focus_list[$label] = array('related_tabid' => $rel_tab_id, 'relationId' =>
-				$relationId, 'actions' => $actions);
-			// END
+			// vtlib customization: Send more information (from module, related module) to the callee
+			$focus_list[$label] = array('related_tabid' => $rel_tab_id, 'relationId' => $relationId, 'actions' => $actions);
 		}
 	}
 	$log->debug("Exiting getRelatedLists method ...");
@@ -1747,10 +1740,14 @@ function isPresentRelatedLists($module, $activity_mode='') {
 			$relationLabel = $adb->query_result($result, $i, 'label');
 			$relatedTabId = $adb->query_result($result, $i, 'related_tabid');
 			//check for module disable.
-			$permitted = $tab_seq_array[$relatedTabId];
-			if ($permitted === 0 || empty($relatedTabId)) {
-				if ($is_admin || $profileTabsPermission[$relatedTabId] === 0 || empty($relatedTabId)) {
-					$retval[$relatedId] = $relationLabel;
+			if (empty($relatedTabId)) {
+				$retval[$relatedId] = $relationLabel;
+			} else {
+				$permitted = $tab_seq_array[$relatedTabId];
+				if ($permitted === 0) {
+					if ($is_admin || $profileTabsPermission[$relatedTabId] === 0) {
+						$retval[$relatedId] = $relationLabel;
+					}
 				}
 			}
 		}
@@ -1842,7 +1839,7 @@ function getDetailBlockInformation($module, $result, $col_fields, $tabid, $block
 				$use_key1 = " " . $key1;
 			}
 
-			if ($value_array[$i][$key1]['ui'] != 19 && $value_array[$i][$key1]['ui'] != 20) {
+			if ($value_array[$i][$key1]['ui'] != 19 && $value_array[$i][$key1]['ui'] != 20 && !empty($key2)) {
 				$detailview_data[$j] = array($use_key1 => $value_array[$i][$key1], $key2 => $value_array[$i + 1][$key2]);
 				$i+=2;
 			} else {
@@ -1855,22 +1852,26 @@ function getDetailBlockInformation($module, $result, $col_fields, $tabid, $block
 	$returndata = array();
 	foreach ($block_label as $blockid => $label) {
 		if ($label == '') {
-			$returndata[getTranslatedString($curBlock, $module)] = array_merge((array) $returndata[getTranslatedString($curBlock, $module)], (array) $label_data[$blockid]);
+			$i18nidx = getTranslatedString($curBlock,$module);
+			if (!isset($returndata[$i18nidx])) $returndata[$i18nidx] = array();
+			if (!isset($label_data[$blockid])) $label_data[$blockid] = array();
+			$returndata[$i18nidx]=array_merge((array)$returndata[$i18nidx],(array)$label_data[$blockid]);
 		} else {
 			$curBlock = $label;
-			if (is_array($label_data[$blockid])) {
-				if (isset($returndata[getTranslatedString($curBlock, $module)])) {
-					$returndata[getTranslatedString($curBlock, $module)] = array_merge((array) $returndata[getTranslatedString($curBlock, $module)], (array) $label_data[$blockid]);
-				} else {
-					$returndata[getTranslatedString($curBlock, $module)] = (array) $label_data[$blockid];
-				}
+			if (isset($label_data[$blockid]) and is_array($label_data[$blockid])) {
+				$i18nidx = getTranslatedString($curBlock,$module);
+				if (!isset($returndata[$i18nidx])) $returndata[$i18nidx] = array();
+				$returndata[$i18nidx]=array_merge((array)$returndata[$i18nidx],(array)$label_data[$blockid]);
 			} elseif (file_exists("Smarty/templates/modules/$module/{$label}_detail.tpl")) {
-				$returndata[getTranslatedString($curBlock,$module)]=array_merge((array)$returndata[getTranslatedString($curBlock,$module)],array($label=>array()));
+				$i18nidx = getTranslatedString($curBlock,$module);
+				if (!isset($returndata[$i18nidx])) $returndata[$i18nidx] = array();
+				$returndata[$i18nidx]=array_merge((array)$returndata[$i18nidx],array($label=>array()));
 			} else {
 				$brs = $adb->pquery('select isrelatedlist from vtiger_blocks where blockid=?',array($blockid));
 				if ($brs and $adb->num_rows($brs)>0) {
 					$rellist = $adb->query_result($brs, 0,'isrelatedlist');
 					if ($rellist>0) {
+						if (!isset($returndata[$curBlock])) $returndata[$curBlock] = array();
 						$returndata[$curBlock]=array_merge((array)$returndata[$curBlock],array($label=>array(),'relatedlist'=>$rellist));
 					}
 				}

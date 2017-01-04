@@ -134,7 +134,8 @@ class Leads extends CRMEntity {
 				LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
 				LEFT JOIN vtiger_users ON vtiger_crmentity.smownerid = vtiger_users.id and vtiger_users.status='Active'";
 		$query .= $this->getNonAdminAccessControlQuery('Leads',$current_user);
-		$where_auto = " vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted =0";
+		$val_conv = ((isset($_COOKIE['LeadConv']) && $_COOKIE['LeadConv'] == 'true') ? 1 : 0);
+		$where_auto = " vtiger_crmentity.deleted=0 AND vtiger_leaddetails.converted =$val_conv";
 
 		if($where != "")
 			$query .= " where ($where) AND ".$where_auto;
@@ -607,7 +608,7 @@ class Leads extends CRMEntity {
 			$permitted_field_lists[] = $adb->query_result($result1,$i,'columnname');
 		}
 
-		$result =& $this->db->query($query,true,"Error retrieving $this->object_name list: ");
+		$result =& $this->db->query($query,true,"Error retrieving $currentModule list: ");
 		$list = Array();
 		$rows_found =  $this->db->getRowCount($result);
 		if($rows_found != 0)

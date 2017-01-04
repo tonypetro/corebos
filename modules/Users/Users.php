@@ -44,7 +44,6 @@ class Users extends CRMEntity {
 
 	var $module_name = "Users";
 
-	var $object_name = "User";
 	var $user_preferences;
 	var $homeorder_array = array('HDB'=>'', 'ALVT'=>'', 'PLVT'=>'', 'QLTQ'=>'', 'CVLVT'=>'', 'HLT'=>'', 'GRT'=>'', 'OLTSO'=>'', 'ILTI'=>'', 'MNL'=>'', 'OLTPO'=>'', 'LTFAQ'=>'', 'UA'=>'', 'PA'=>'');
 
@@ -856,9 +855,11 @@ class Users extends CRMEntity {
 			$currency_result = $adb->pquery($currency_query, array());
 		}
 		$currency_array = array("$" => "&#36;", "&euro;" => "&#8364;", "&pound;" => "&#163;", "&yen;" => "&#165;");
-		$ui_curr = $currency_array[$adb->query_result($currency_result, 0, "currency_symbol")];
-		if ($ui_curr == "")
+		if (isset($currency_array[$adb->query_result($currency_result, 0, "currency_symbol")])) {
+			$ui_curr = $currency_array[$adb->query_result($currency_result, 0, "currency_symbol")];
+		} else {
 			$ui_curr = $adb->query_result($currency_result, 0, "currency_symbol");
+		}
 		$this->column_fields["currency_name"] = $this->currency_name = $adb->query_result($currency_result, 0, "currency_name");
 		$this->column_fields["currency_code"] = $this->currency_code = $adb->query_result($currency_result, 0, "currency_code");
 		$this->column_fields["currency_symbol"] = $this->currency_symbol = $ui_curr;

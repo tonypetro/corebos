@@ -10,7 +10,7 @@
 require_once('include/utils/utils.php');
 require_once("include/utils/ChartUtils.php");
 
-/* Function to get the Account name for a given vtiger_account id
+/* Function to get the Account name for a given account id
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  */
@@ -52,8 +52,9 @@ function module_Chart_HomePageDashboard($userinfo) {
 	$spl_modules = Array('Leads', 'HelpDesk', 'Potentials', 'Calendar');
 
 	// Leads module
+	$val_conv = ((isset($_COOKIE['LeadConv']) && $_COOKIE['LeadConv'] == 'true') ? 'le.converted = 1' : 'le.converted = 0 OR le.converted IS NULL');
 	$leadcountres = $adb->query("SELECT count(*) as count FROM vtiger_crmentity se INNER JOIN vtiger_leaddetails le on le.leadid = se.crmid
-		WHERE se.deleted = 0 AND se.smownerid = $user_id AND (le.converted = 0 OR le.converted IS NULL)");
+		WHERE se.deleted = 0 AND se.smownerid = $user_id AND ($val_conv)");
 	$modrecords['Leads'] = $adb->query_result($leadcountres, 0, 'count');
 
 	// HelpDesk module
@@ -173,7 +174,9 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 	$target_val="";
 	$bar_target_val="";
 	$test_target_val="";
-
+	$urlstring = '';
+	$mod_graph_date = '';
+	$max_label_length = GlobalVariable::getVariable('Application_ListView_Max_Text_Length',40,$currentModule);
 	if($no_of_rows!=0)
 	{
 		while($row = $adb->fetch_array($result))
@@ -193,7 +196,8 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 				$mod_name=$mod_strings["Un Assigned"];
 				$search_str = " ";
 			}
-			$crtd_time=$row['createdtime'];
+			if (strlen($mod_name)>$max_label_length) $mod_name = substr($mod_name, 0, $max_label_length);
+			$crtd_time= isset($row['createdtime']) ? $row['createdtime'] : date('Y-m-d H:i:s');
 			$crtd_time_array=explode(" ",$crtd_time);
 			$crtd_date=$crtd_time_array[0];
 			if(!isset($mod_tot_cnt_array[$crtd_date]))
@@ -202,26 +206,7 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 			$mod_tot_cnt_array[$crtd_date]+=1;
 
 			if (in_array($mod_name,$mod_name_array) == false) {
-				$uniqueid[$mod_name]='0';
-				array_push($mod_name_array,$mod_name); // getting all the unique Names into the array
-				if($graph_for == "productname") {
-					if($row['qtyinstock'] =='')
-						$mod_count_array[$mod_name] = 1;
-					else
-						$mod_count_array[$mod_name]=$row['qtyinstock'];
-				}
-			}
-			else
-			{
-				if($graph_for == "productname") {
-					$uniqueid[$mod_name]=$uniqueid[$mod_name]+1;
-					$mod_name=$mod_name.'['.$uniqueid[$mod_name].']';
-					array_push($mod_name_array,$mod_name); // getting all the unique Names into the array
-					if($row['qtyinstock'] =='')
-						$mod_count_array[$mod_name] = 1;
-					else
-						$mod_count_array[$mod_name]=$row['qtyinstock'];
-				}
+				array_push($mod_name_array,$mod_name);
 			}
 			if (in_array($search_str,$search_str_array) == false)
 			{
@@ -257,7 +242,7 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 
 			$mod_cnt_table = '<table border=0 cellspacing=1 cellpadding=3><tr><th>  '.getTranslatedString('LBL_STATUS').'  </th>';
 
-			//Assigning the Header values to the vtiger_table and giving the dates as graphformat
+			//Assigning the Header values to the table and giving the dates as graph format
 			for($i=0; $i<$days; $i++)
 			{
 				$tdate=$date_array[$i];
@@ -439,7 +424,7 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 
 
 				//Passing count to graph
-				if($mod_cnt_val!="") $mod_cnt_val.="::$mod_count_val";
+				if(!empty($mod_cnt_val)) $mod_cnt_val.="::$mod_count_val";
 				else $mod_cnt_val="$mod_count_val";
 				if($module!="")
 				{
@@ -493,8 +478,8 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 				else
 					$test_target_val.="K".$link_val;
 			}
-			$mod_cnt_table .="</tr><tr><td class=\"$class\">".getTranslatedString('LBL_TOTAL').'</td>';
-			//For all Days getting the vtiger_table
+			$mod_cnt_table .="</tr><tr><td>".getTranslatedString('LBL_TOTAL').'</td>';
+			//For all Days getting the table
 			for($k=0; $k<$days;$k++)
 			{
 				$tdate=$date_array[$k];
@@ -513,12 +498,11 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 				$cnt_total=array_sum($mod_tot_cnt_array);
 			}
 
-			$mod_cnt_table.="<td align=\"center\" class=\"$class\">$cnt_total</td></tr></table>";
+			$mod_cnt_table.="<td align=\"center\">$cnt_total</td></tr></table>";
 			$mod_cnt_table.="</table>";
 			$title_of_graph="$title : $cnt_total";
 			$bar_target_val=urlencode($bar_target_val);
 			$test_target_val=urlencode($test_target_val);
-
 
 			$Prod_mod_val=array($mod_name_val,$mod_cnt_val,$title_of_graph,$bar_target_val,$mod_graph_date,$urlstring,$mod_cnt_table,$test_target_val);
 			return $Prod_mod_val;
@@ -526,7 +510,6 @@ function module_Chart($user_id,$date_start="2000-01-01",$end_date="2017-01-01",$
 		else
 		{
 			$data=0;
-
 		}
 	}
 	else
@@ -562,6 +545,7 @@ function get_graph_by_type($graph_by,$graph_title,$module,$where,$query,$width=9
 		}
 
 		$top=20;
+		$right=20;
 		$left=140;
 		$bottom=120;
 		if (isset($_REQUEST['Chart_Type'])) {

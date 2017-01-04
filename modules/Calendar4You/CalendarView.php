@@ -37,7 +37,6 @@ $c_mod_strings = return_specified_module_language($current_language, "Calendar")
 $smarty->assign('CMOD', $c_mod_strings);
 
 $smarty->assign('MODULE', $currentModule);
-// TODO: Update Single Module Instance name here.
 $smarty->assign('SINGLE_MOD', 'SINGLE_'.$currentModule);
 $smarty->assign('CATEGORY', $category);
 $smarty->assign("THEME", $theme);
@@ -322,7 +321,7 @@ switch ($dat_fmt) {
 $smarty->assign('CALENDAR_DAYMONTHFORMAT', $CALENDAR_DAYMONTHFORMAT);
 $dat_fmt = str_replace("mm","MM",$dat_fmt);
 $smarty->assign('USER_DATE_FORMAT', $dat_fmt);
-$smarty->assign('Calendar_Slot_Minutes', GlobalVariable::getVariable('Calendar_Slot_Minutes', 15));
+$smarty->assign('Calendar_Slot_Minutes', "00:".GlobalVariable::getVariable('Calendar_Slot_Minutes', 15).":00");
 $smarty->assign('Calendar_Modules_Panel_Visible', GlobalVariable::getVariable('Calendar_Modules_Panel_Visible', 1));
 
 $smarty->display('modules/Calendar4You/CalendarView.tpl');

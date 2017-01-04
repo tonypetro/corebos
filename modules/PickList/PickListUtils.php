@@ -109,10 +109,9 @@ function getAllPickListValues($fieldName,$lang = Array() ){
 	$arr = array();
 	for($i=0;$i<$count;$i++){
 		$pick_val = $adb->query_result($result, $i, $fieldName);
-		if($lang[$pick_val] != ''){
+		if (!empty($lang[$pick_val])) {
 			$arr[$pick_val] = $lang[$pick_val];
-		}
-		else{
+		} else {
 			$arr[$pick_val] = $pick_val;
 		}
 	}
@@ -233,13 +232,13 @@ function getAssignedPicklistValues($tableName, $roleid, $adb, $lang=array()){
  * It gets all the allowed entities to be shown in a picklist uitype 1613. 1633 and return an array in the following format
  * $modules = Array($index=>$tabname,$index1=>$tabname1)
  */
-function getAllowedPicklistModules() {
+function getAllowedPicklistModules($allowNonEntities=0) {
 	global $adb;
 	//get All the modules the current user is permitted to Access.
 	$allAllowedModules=getPermittedModuleNames();
 	$allEntities = array();
-	$entityQuery = "SELECT name FROM vtiger_tab
-			WHERE isentitytype=1 and name NOT IN ('Rss','Webmails','Recyclebin','Events')";
+	$entitycondition = ($allowNonEntities ? '' : 'isentitytype=1 and ');
+	$entityQuery = "SELECT name FROM vtiger_tab WHERE $entitycondition name NOT IN ('Rss','Webmails','Recyclebin','Events')";
 	$result = $adb->pquery($entityQuery, array());
 	while($result && $row = $adb->fetch_array($result)){
 		$allEntities[] = $row['name'];
@@ -249,12 +248,20 @@ function getAllowedPicklistModules() {
 }
 
 function getPicklistValuesSpecialUitypes($uitype,$fieldname,$value,$action='EditView'){
-	global $adb,$log,$current_user;
+	global $adb,$log,$current_user, $default_charset;
 
 	$fieldname = $adb->sql_escape_string($fieldname);
-	$picklistValues = getAllowedPicklistModules();
+	if ($uitype == '1614') {
+		$uitype = '1613';
+		$allowNonEntities = 1;
+	} elseif ($uitype == '3314') {
+		$uitype = '3313';
+		$allowNonEntities = 1;
+	} else {
+		$allowNonEntities = 0;
+	}
+	$picklistValues = getAllowedPicklistModules($allowNonEntities);
 	$options = array();
-	$options[] = "";
 	$pickcount = 0;
 	if($uitype == "1613"){
 		$found = false;

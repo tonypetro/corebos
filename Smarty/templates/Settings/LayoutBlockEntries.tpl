@@ -16,7 +16,7 @@
 				<script type="text/javascript" src="include/js/general.js"></script>
 				<table class="listTable" border="0" cellpadding="3" cellspacing="0" width="100%">
 					{foreach item=entries key=id from=$CFENTRIES name=outer}
-						{if $entries.blockid ne $RELPRODUCTSECTIONID && $entries.blocklabel neq '' }
+						{if isset($entries.blockid) && $entries.blockid ne $RELPRODUCTSECTIONID && isset($entries.blocklabel) && $entries.blocklabel neq '' }
 							{if $entries.blockid eq $COMMENTSECTIONID || $entries.blockid eq $SOLUTIONBLOCKID || $entries.isrelatedlist > 0}
 								{assign var='showactionbuttons' value=false}
 							{else}
@@ -60,13 +60,13 @@
 																	<td align="center">
 																		<table border="0" cellspacing="0" cellpadding="0" width="100%">
 																			<tr>
-																				<td>{if $entries.hidden_count neq '0' || $entries.hidden_count neq null}
-																					{$APP.LBL_SELECT_FIELD_TO_MOVE}
+																				<td>{if !empty($entries.hidden_count)}
+																					{$MOD.LBL_SELECT_FIELD_TO_MOVE}
 																					{/if}
 																				</td>
 																			</tr>
 																			<tr align="left">
-																				<td>{if $entries.hidden_count neq '0'}
+																				<td>{if !empty($entries.hidden_count)}
 																					<select class="small" id="hiddenfield_assignid_{$entries.blockid}" style="width:225px" size="10" multiple>
 																					{foreach name=inner item=value from=$entries.hiddenfield}
 																						<option value="{$value.fieldselect}">{$value.fieldlabel|@getTranslatedString:$MODULE}</option>
