@@ -8,14 +8,11 @@ build/migrate6
 build/migrate_from_vt6.php
 build/missingLanguage.sh
 build/oo-merge
-build/tests
 build/InstallRESTChanges.php
 build/WebserviceVQLParser
-include/php_writeexcel
-include/prototype-1.4.0
-include/scriptaculous
-include/Zend
-Image
+include/install/resources/gdinfo.php
+include/install/resources/utils.php
+include/utils/DBHealthCheck.php
 install
 install.php
 modules/Users/authTypes/adldap_test.php
@@ -34,7 +31,6 @@ echo "Deactivate all modules you are not using. Besides being more secure the ap
 echo "Optionally you can"
 echo
 echo "=> Deactivate and eliminate (completely uninstall) these modules:"
-echo " - FieldFormulas  this module is totally obsolete > move any rules you have there to workflows"
 echo " - evvtApps  as far as I know nobody is using this"
 echo
 echo "=> Eliminate the SOAP interface extensions you are not using:"
@@ -43,5 +39,5 @@ echo " - soap/vtigerolservice.php  (I don't think this one is used at all, it is
 echo
 echo "=> Deactivate webservice access with the Webservice_Enabled global variable if you are not using this interface."
 echo
-echo "=> If you are not using the OmniPay Payment Gateway you can delete the Pay.php script
+echo "=> If you are not using the OmniPay Payment Gateway you can delete the Pay.php script"
 echo

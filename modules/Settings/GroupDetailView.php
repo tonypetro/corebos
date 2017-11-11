@@ -90,8 +90,8 @@ $smarty->assign("GROUP_NAME",$groupInfoArr[0]);
 function getStdOutput($groupInfoArr,$groupId, $mod_strings)
 {
 	global $adb;
-    $groupfields['groupname'] = $groupInfoArr[0];    
-    $groupfields['description'] = $groupInfoArr[1];
+	$groupfields['groupname'] = $groupInfoArr[0];    
+	$groupfields['description'] = $groupInfoArr[1];
 
 	$row=1;
 	$groupMember = $groupInfoArr[2];
@@ -138,11 +138,11 @@ function getStdOutput($groupInfoArr,$groupId, $mod_strings)
 			$row++;
 			$memberinfo [] = $groupmembers;
 		}
-		if(sizeof($memberinfo) >0)
+		if (count($memberinfo) >0) {
 			$information[$memberDisplayType] = $memberinfo;
+		}
 	}
-	$returndata=array($groupfields,$information);
-	return $returndata;
+	return array($groupfields,$information);
 }
 
 $smarty->assign("MOD", return_module_language($current_language,'Settings'));
@@ -151,5 +151,4 @@ $smarty->assign("IMAGE_PATH",$image_path);
 $smarty->assign("APP", $app_strings);
 $smarty->assign("CMOD", $mod_strings);
 $smarty->display("GroupDetailview.tpl");
-
 ?>

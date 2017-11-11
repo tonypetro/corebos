@@ -65,7 +65,7 @@ function get_select_options(&$option_list, $selected, $advsearch = 'false') {
  */
 function get_select_options_with_id(&$option_list, $selected_key, $advsearch = 'false') {
 	global $log;
-	$log->debug("Entering and Exiting get_select_options_with_id (" . print_r($option_list,true) . "," . $selected_key . "," . $advsearch . ") method ...");
+	$log->debug("Entering and Exiting get_select_options_with_id (" . print_r($option_list,true) . "," . print_r($selected_key,true) . "," . $advsearch . ") method ...");
 	return get_select_options_with_id_separate_key($option_list, $option_list, $selected_key, $advsearch);
 }
 
@@ -106,8 +106,7 @@ function get_options_array_seperate_key(&$label_list, &$key_list, $selected_key,
 	//for setting null selection values to human readable --None--
 	$pattern = "/'0?'></";
 	$replacement = "''>" . $app_strings['LBL_NONE'] . "<";
-	if (!is_array($selected_key))
-		$selected_key = array($selected_key);
+	$selected_key = (array)$selected_key;
 
 	//create the type dropdown domain and set the selected value if $opp value already exists
 	foreach ($key_list as $option_key => $option_value) {
@@ -144,8 +143,7 @@ function get_select_options_with_id_separate_key(&$label_list, &$key_list, $sele
 
 	$pattern = "/'0?'></";
 	$replacement = "''>" . $app_strings['LBL_NONE'] . "<";
-	if (!is_array($selected_key))
-		$selected_key = array($selected_key);
+	$selected_key = (array)$selected_key;
 
 	foreach ($key_list as $option_key => $option_value) {
 		$selected_string = '';
@@ -173,8 +171,7 @@ function get_select_options_with_value_separate_key(&$label_list, &$key_list, $s
 
 	$pattern = "/'0?'></";
 	$replacement = "''>" . $app_strings['LBL_NONE'] . "<";
-	if (!is_array($selected_key))
-		$selected_key = array($selected_key);
+	$selected_key = (array)$selected_key;
 
 	foreach ($key_list as $option_key => $option_value) {
 		$selected_string = '';
@@ -344,9 +341,11 @@ function getTabid($module) {
 	if ($tabid === false) {
 		if (file_exists('tabdata.php') && (filesize('tabdata.php') != 0)) {
 			include('tabdata.php');
-			if (!isset($tab_info_array[$module])) return null;
-			$tabid = $tab_info_array[$module];
-		} else {
+			if (!empty($tab_info_array[$module])) {
+				$tabid = $tab_info_array[$module];
+			}
+		}
+		if ($tabid === false) {
 			global $adb;
 			$sql = "select tabid from vtiger_tab where name=?";
 			$result = $adb->pquery($sql, array($module));
@@ -625,8 +624,7 @@ function getFullNameFromQResult($result, $row_count, $module) {
 function getFullNameFromArray($module, $fieldValues) {
 	$entityInfo = getEntityFieldNames($module);
 	$fieldsName = $entityInfo['fieldname'];
-	$displayName = getEntityFieldNameDisplay($module, $fieldsName, $fieldValues);
-	return $displayName;
+	return getEntityFieldNameDisplay($module, $fieldsName, $fieldValues);
 }
 
 /**
@@ -635,15 +633,12 @@ function getFullNameFromArray($module, $fieldValues) {
  * returns the Campaign Name in string format.
  */
 function getCampaignName($campaign_id) {
-	global $log;
-	$log->debug("Entering getCampaignName(" . $campaign_id . ") method ...");
-	$log->info("in getCampaignName " . $campaign_id);
-
-	global $adb;
-	$sql = "select * from vtiger_campaign where campaignid=?";
+	global $log, $adb;
+	$log->debug('Entering getCampaignName(' . $campaign_id . ') method ...');
+	$sql = 'select * from vtiger_campaign where campaignid=?';
 	$result = $adb->pquery($sql, array($campaign_id));
-	$campaign_name = $adb->query_result($result, 0, "campaignname");
-	$log->debug("Exiting getCampaignName method ...");
+	$campaign_name = $adb->query_result($result, 0, 'campaignname');
+	$log->debug('Exiting getCampaignName method ...');
 	return $campaign_name;
 }
 
@@ -999,11 +994,13 @@ function getValidDisplayDate($cur_date_val) {
 	if ($dat_fmt == '') {
 		$dat_fmt = 'dd-mm-yyyy';
 	}
-	$date_value = explode(' ', $cur_date_val);
-	list($y, $m, $d) = explode('-', $date_value[0]);
-	list($fy, $fm, $fd) = explode('-', $dat_fmt);
-	if ((strlen($fy) == 4 && strlen($y) == 4) || (strlen($fd) == 4 && strlen($d) == 4)) {
-		return "$y-$m-$d";
+	if (!empty($cur_date_val)) {
+		$date_value = explode(' ', $cur_date_val);
+		list($y, $m, $d) = explode('-', $date_value[0]);
+		list($fy, $fm, $fd) = explode('-', $dat_fmt);
+		if ((strlen($fy) == 4 && strlen($y) == 4) || (strlen($fd) == 4 && strlen($d) == 4)) {
+			return "$y-$m-$d";
+		}
 	}
 	$date = new DateTimeField($cur_date_val);
 	return $date->getDisplayDate();
@@ -1235,17 +1232,21 @@ function getBlocks($module, $disp_view, $mode, $col_fields = '', $info_type = ''
 	$tabid = getTabid($module);
 	$block_detail = Array();
 	$getBlockinfo = "";
-	$query = "select blockid,blocklabel,show_title,display_status from vtiger_blocks where tabid=? and $disp_view=0 and visible = 0 order by sequence";
+	$query = "select blockid,blocklabel,show_title,display_status,isrelatedlist from vtiger_blocks where tabid=? and $disp_view=0 and visible = 0 order by sequence";
 	$result = $adb->pquery($query, array($tabid));
 	$noofrows = $adb->num_rows($result);
 	$prev_header = "";
 	$blockid_list = array();
 	for ($i = 0; $i < $noofrows; $i++) {
 		$blockid = $adb->query_result($result, $i, "blockid");
-		array_push($blockid_list, $blockid);
+		$blockid_list[] = $blockid;
 		$block_label[$blockid] = $adb->query_result($result, $i, "blocklabel");
-
-		$sLabelVal = getTranslatedString($block_label[$blockid], $module);
+		$isrelatedlist = $adb->query_result($result, $i, "isrelatedlist");
+		if(!is_null($isrelatedlist) && $isrelatedlist != 0){
+			$sLabelVal = $block_label[$blockid];
+		}else{
+			$sLabelVal = getTranslatedString($block_label[$blockid], $module);
+		}
 		$aBlockStatus[$sLabelVal] = $adb->query_result($result, $i, "display_status");
 	}
 	if ($mode == 'edit') {
@@ -1337,7 +1338,7 @@ function getCustomBlocks($module, $disp_view) {
 		$blockid = $adb->query_result($result, $i, "blockid");
 		$block_label[$blockid] = $adb->query_result($result, $i, "blocklabel");
 		$sLabelVal = getTranslatedString($block_label[$blockid], $module);
-		array_push($block_list, $sLabelVal);
+		$block_list[] = $sLabelVal;
 		if (($disp_view == 'edit_view' || $disp_view == 'create' || $disp_view == 'create_view') && file_exists("Smarty/templates/modules/$module/{$block_label[$blockid]}_edit.tpl")) {
 			$block_list[$sLabelVal] = array('custom' => true, 'relatedlist' => false, 'tpl' => "modules/$module/{$block_label[$blockid]}_edit.tpl");
 		} elseif ($disp_view == 'detail_view' && file_exists("Smarty/templates/modules/$module/{$block_label[$blockid]}_detail.tpl")) {
@@ -1467,25 +1468,22 @@ function updateInfo($id) {
  * rotating the product Images
  */
 function getProductImages($id) {
-	global $log;
+	global $adb, $log;
 	$log->debug("Entering getProductImages(" . $id . ") method ...");
-	global $adb;
-	$image_lists = array();
-	$script_images = array();
-	$script = '<script>var ProductImages = new Array(';
-	$i = 0;
 	$query = 'select imagename from vtiger_products where productid=?';
 	$result = $adb->pquery($query, array($id));
 	$imagename = $adb->query_result($result, 0, 'imagename');
-	$image_lists = explode('###', $imagename);
-	for ($i = 0; $i < count($image_lists); $i++) {
-		$script_images[] = '"' . $image_lists[$i] . '"';
-	}
-	$script .=implode(',', $script_images) . ');</script>';
+
 	if ($imagename != '') {
-		$log->debug("Exiting getProductImages method ...");
-		return $script;
+		$script = implode(',', array_map(
+			function ($val) { return "\"$val\""; },
+			explode('###', $imagename)
+		));
+		$log->debug('Exiting getProductImages method ...');
+		return "<script>var ProductImages = new Array($script);</script>";
 	}
+	$log->debug('Exiting getProductImages method ...');
+	return '';
 }
 
 /**
@@ -1606,13 +1604,10 @@ function file_exist_fn($filename, $exist) {
 			$next = $exist + 1;
 			$explode_name = explode("_", $filename);
 			$implode_array = array();
-			for ($j = 0; $j < count($explode_name); $j++) {
-				if ($j != 0) {
-					$implode_array[] = $explode_name[$j];
-				}
+			for ($j = 1, $jMax = count($explode_name); $j < $jMax; $j++) {
+				$implode_array[] = $explode_name[$j];
 			}
 			$implode_name = implode("_", $implode_array);
-			$test_name = $implode_name;
 		} else {
 			$implode_name = $filename;
 		}
@@ -1775,7 +1770,10 @@ function create_tab_data_file() {
 	}
 
 	$filename = 'tabdata.php';
-
+	VTCacheUtils::emptyTabidInfo();
+	if (function_exists('opcache_invalidate')) {
+		opcache_invalidate('tabdata.php', true);
+	}
 
 	if (file_exists($filename)) {
 
@@ -1831,11 +1829,8 @@ function getQuickCreateModules() {
 	global $log, $adb, $mod_strings;
 	$log->debug('Entering getQuickCreateModules() method ...');
 
-	// vtlib customization: Ignore disabled modules.
-	//$qc_query = "select distinct vtiger_tab.tablabel,vtiger_tab.name from vtiger_field inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid where quickcreate=0 order by vtiger_tab.tablabel";
 	$qc_query = "select distinct vtiger_tab.tablabel,vtiger_tab.name from vtiger_field inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid 
-			where quickcreate in (0,2) and vtiger_tab.presence != 1";
-	// END
+		where quickcreate in (0,2) and vtiger_tab.presence != 1 and vtiger_tab.name != 'Calendar' and vtiger_tab.name != 'Events'";
 
 	$result = $adb->pquery($qc_query, array());
 	$noofrows = $adb->num_rows($result);
@@ -1850,7 +1845,7 @@ function getQuickCreateModules() {
 			$return_qcmodule[] = $tabname;
 		}
 	}
-	if (sizeof($return_qcmodule > 0)) {
+	if (count($return_qcmodule) > 0) {
 		$return_qcmodule = array_chunk($return_qcmodule, 2);
 	}
 
@@ -1872,7 +1867,7 @@ function QuickCreate($module) {
 	//Adding Security Check
 	require('user_privileges/user_privileges_' . $current_user->id . '.php');
 	if ($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] == 0) {
-		$quickcreate_query = "select * from vtiger_field where (quickcreate in (0,2) or typeofdata like '%M%') and tabid = ? and vtiger_field.presence in (0,2) and displaytype != 2 order by quickcreatesequence";
+		$quickcreate_query = "select * from vtiger_field where (quickcreate in (0,2) or typeofdata like '%~M%') and tabid = ? and vtiger_field.presence in (0,2) and displaytype != 2 order by quickcreatesequence";
 		$params = array($tabid);
 	} else {
 		$profileList = getCurrentUserProfileList();
@@ -1906,7 +1901,7 @@ function QuickCreate($module) {
 		$custfld = getOutputHtml($uitype, $fieldname, $fieldlabel, $maxlength, $col_fields, $generatedtype, $module, '', $typeofdata);
 		$qcreate_arr[] = $custfld;
 	}
-	for ($i = 0, $j = 0; $i < count($qcreate_arr); $i = $i + 2, $j++) {
+	for ($i = 0, $j = 0, $iMax = count($qcreate_arr); $i < $iMax; $i += 2, $j++) {
 		$key1 = $qcreate_arr[$i];
 		if (isset($qcreate_arr[$i + 1]) and is_array($qcreate_arr[$i + 1])) {
 			$key2 = $qcreate_arr[$i + 1];
@@ -2036,8 +2031,8 @@ function getEntityName($module, $ids_list) {
 		$entityIdField = $entity_field_info['entityidfield'];
 		$entity_FieldValue = getEntityFieldValues($entity_field_info, $ids_list);
 
-		foreach($entity_FieldValue as $key => $entityInfo) {
-			foreach($entityInfo as $key => $entityName) {
+		foreach ($entity_FieldValue as $entityInfo) {
+			foreach ($entityInfo as $key => $entityName) {
 				$fieldValues = $entityName;
 				$entityDisplay[$key] = getEntityFieldNameDisplay($module, $fieldsName, $fieldValues);
 			}
@@ -2069,11 +2064,14 @@ function decideFilePath() {
 	switch (strtolower($saveStrategy)) {
 		case 'crmid':
 			// CRMID in folder
-			if (isset($_REQUEST['return_id']) and $_REQUEST['return_id']>0 and $_REQUEST['return_id']<100000000000) {
-				$filepath .= $_REQUEST['return_id'] . '/';
+			if (isset($_REQUEST['return_id'])) {
+				$retid = vtlib_purify($_REQUEST['return_id']);
+				if (is_numeric($retid) && $retid > 0 && $retid < 100000000000) {
+					$filepath .= $retid . '/';
+				}
 			}
 
-			if(!is_dir($filepath)) {
+			if (!is_dir($filepath)) {
 				//create new folder
 				mkdir($filepath);
 			}
@@ -2218,7 +2216,7 @@ function getMergedDescription($description, $id, $parent_type) {
 	$templateVariablePair = explode('$', $description);
 	$token_data_pair = explode('$', $description);
 	$fields = Array();
-	for ($i = 1; $i < count($token_data_pair); $i+=2) {
+	for ($i = 1, $iMax = count($token_data_pair); $i < $iMax; $i+=2) {
 		if (strpos($token_data_pair[$i], '-') === false) continue;
 		$module = explode('-', $token_data_pair[$i]);
 		$fields[$module[0]][] = $module[1];
@@ -2250,9 +2248,14 @@ function getMergedDescriptionCustomVars($fields, $description) {
 		$token_value = '';
 		switch ($columnname) {
 			case 'currentdate':
-				$mes = date('m')-1;
-				$mesi18n = $lang['MONTH_STRINGS'][$mes];
-				$token_value = $mesi18n.date(' j, Y');
+				$dtformat = GlobalVariable::getVariable('EMail_CustomCurrentDate_Format','');
+				if ($dtformat=='') {
+					$mes = date('m')-1;
+					$mesi18n = $lang['MONTH_STRINGS'][$mes];
+					$token_value = $mesi18n.date(' j, Y');
+				} else {
+					$token_value = date($dtformat);
+				}
 				break;
 			case 'currenttime': $token_value = date("G:i:s T");
 				break;
@@ -2288,7 +2291,8 @@ function get_announcements() {
 	global $default_charset, $currentModule;
 	$announcement = GlobalVariable::getVariable('Application_Announcement','',$currentModule);
 	if ($announcement != '') {
-			$announcement = html_entity_decode($announcement, ENT_QUOTES, $default_charset);
+		$announcement = html_entity_decode($announcement, ENT_QUOTES, $default_charset);
+		$announcement = vtlib_purify($announcement);
 	}
 	return $announcement;
 }
@@ -2373,11 +2377,10 @@ function getrecurringObjValue() {
 				}
 			}
 		}
-		if (isset($_REQUEST['repeat_frequency']) && $_REQUEST['repeat_frequency'] != null)
+		if (isset($_REQUEST['repeat_frequency']) && $_REQUEST['repeat_frequency'] != null) {
 			$recurring_data['repeat_frequency'] = $_REQUEST['repeat_frequency'];
-
-		$recurObj = RecurringType::fromUserRequest($recurring_data);
-		return $recurObj;
+		}
+		return RecurringType::fromUserRequest($recurring_data);
 	}
 }
 
@@ -2801,74 +2804,6 @@ function getBasic_Advance_SearchURL() {
 	return $url;
 }
 
-/** Clear the Smarty cache files(in Smarty/smarty_c)
- * * This function will called after migration.
- * */
-function clear_smarty_cache($path = null) {
-
-	global $root_directory;
-	if ($path == null) {
-		$path = $root_directory . 'Smarty/templates_c/';
-	}
-	$mydir = @opendir($path);
-	while (false !== ($file = readdir($mydir))) {
-		if ($file != "." && $file != ".." && $file != ".svn") {
-			//chmod($path.$file, 0777);
-			if (is_dir($path . $file)) {
-				chdir('.');
-				clear_smarty_cache($path . $file . '/');
-				//rmdir($path.$file); // No need to delete the directories.
-			} else {
-				// Delete only files ending with .tpl.php
-				if (strripos($file, '.tpl.php') == (strlen($file) - strlen('.tpl.php'))) {
-					unlink($path . $file);
-				}
-			}
-		}
-	}
-	@closedir($mydir);
-}
-
-/** Get Smarty compiled file for the specified template filename.
- * * @param $template_file Template filename for which the compiled file has to be returned.
- * * @return Compiled file for the specified template file.
- * */
-function get_smarty_compiled_file($template_file, $path = null) {
-
-	global $root_directory;
-	if ($path == null) {
-		$path = $root_directory . 'Smarty/templates_c/';
-	}
-	$mydir = @opendir($path);
-	$compiled_file = null;
-	while (false !== ($file = readdir($mydir)) && $compiled_file == null) {
-		if ($file != "." && $file != ".." && $file != ".svn") {
-			//chmod($path.$file, 0777);
-			if (is_dir($path . $file)) {
-				chdir('.');
-				$compiled_file = get_smarty_compiled_file($template_file, $path . $file . '/');
-				//rmdir($path.$file); // No need to delete the directories.
-			} else {
-				// Check if the file name matches the required template fiel name
-				if (strripos($file, $template_file . '.php') == (strlen($file) - strlen($template_file . '.php'))) {
-					$compiled_file = $path . $file;
-				}
-			}
-		}
-	}
-	@closedir($mydir);
-	return $compiled_file;
-}
-
-/** Function to carry out all the necessary actions after migration */
-function perform_post_migration_activities() {
-	//After applying all the DB Changes,Here we clear the Smarty cache files
-	clear_smarty_cache();
-	//Writing tab data in flat file
-	create_tab_data_file();
-	create_parenttab_data_file();
-}
-
 /** Function To create Email template variables dynamically -- Pavani */
 function getEmailTemplateVariables($modules_list = null) {
 	global $adb;
@@ -2940,7 +2875,7 @@ function checkFileAccessForInclusion($filepath) {
 	// Set the base directory to compare with
 	$use_root_directory = $root_directory;
 	if (empty($use_root_directory)) {
-		$use_root_directory = realpath(dirname(__FILE__) . '/../../.');
+		$use_root_directory = realpath(__DIR__ . '/../../.');
 	}
 
 	$unsafeDirectories = array('storage', 'cache', 'test', 'build', 'logs', 'backup', 'packages', 'schema');
@@ -2974,7 +2909,7 @@ function checkFileAccessForDeletion($filepath) {
 	// Set the base directory to compare with
 	$use_root_directory = $root_directory;
 	if (empty($use_root_directory)) {
-		$use_root_directory = realpath(dirname(__FILE__) . '/../../.');
+		$use_root_directory = realpath(__DIR__ . '/../../.');
 	}
 
 	$safeDirectories = array('storage', 'cache', 'test');
@@ -3004,7 +2939,7 @@ function checkFileAccessForDeletion($filepath) {
 
 /** Function to check the file access is made within web root directory. */
 function checkFileAccess($filepath) {
-	if (!isFileAccessible($filepath)) {
+	if (!isInsideApplication($filepath)) {
 		global $default_charset;
 		echo "Sorry! Attempt to access restricted file.<br>";
 		echo 'We are looking for this file path: '.htmlspecialchars($filepath, ENT_QUOTES, $default_charset).'<br>';
@@ -3018,29 +2953,10 @@ function checkFileAccess($filepath) {
  * @global String $root_directory vtiger root directory as given in config.inc.php file.
  * @param String $filepath relative path to the file which need to be verified
  * @return Boolean true if file is a valid file within vtiger root directory, false otherwise.
+ * @deprecated
  */
 function isFileAccessible($filepath) {
-	global $root_directory;
-	// Set the base directory to compare with
-	$use_root_directory = $root_directory;
-	if (empty($use_root_directory)) {
-		$use_root_directory = realpath(dirname(__FILE__) . '/../../.');
-	}
-
-	$realfilepath = realpath($filepath);
-
-	/** Replace all \\ with \ first */
-	$realfilepath = str_replace('\\\\', '\\', $realfilepath);
-	$rootdirpath = str_replace('\\\\', '\\', $use_root_directory);
-
-	/** Replace all \ with / now */
-	$realfilepath = str_replace('\\', '/', $realfilepath);
-	$rootdirpath = str_replace('\\', '/', $rootdirpath);
-
-	if (stripos($realfilepath, $rootdirpath) !== 0) {
-		return false;
-	}
-	return true;
+	return isInsideApplication($filepath);
 }
 
 /** Function to get the ActivityType for the given entity id
@@ -3049,10 +2965,9 @@ function isFileAccessible($filepath) {
  */
 function getActivityType($id) {
 	global $adb;
-	$quer = "select activitytype from vtiger_activity where activityid=?";
+	$quer = 'select activitytype from vtiger_activity where activityid=?';
 	$res = $adb->pquery($quer, array($id));
-	$acti_type = $adb->query_result($res, 0, "activitytype");
-	return $acti_type;
+	return $adb->query_result($res, 0, 'activitytype');
 }
 
 /** Function to get owner name either user or group */
@@ -3210,7 +3125,7 @@ function getEntityFieldValues($entity_field_info, $ids_list) {
 	$entity_info = array();
 	for ($i = 0; $i < $numrows; $i++) {
 		if(is_array($fieldsName)) {
-			for($j = 0; $j < count($fieldsName); $j++) {
+			for($j = 0, $jMax = count($fieldsName); $j < $jMax; $j++) {
 				$entity_id = $adb->query_result($result, $i, $entityIdField);
 				$entity_info[$i][$entity_id][$fieldsName[$j]] = $adb->query_result($result, $i, $fieldsName[$j]);
 			}
@@ -3252,8 +3167,7 @@ function vt_suppressHTMLTags($string) {
 }
 
 function vt_hasRTE() {
-	$USE_RTE = GlobalVariable::getVariable('Application_Use_RTE',1);
-	return $USE_RTE;
+	return GlobalVariable::getVariable('Application_Use_RTE',1);
 }
 
 function getNameInDisplayFormat($input, $dispFormat = "lf") {
@@ -3273,13 +3187,11 @@ function getNameInDisplayFormat($input, $dispFormat = "lf") {
 }
 
 function concatNamesSql($string) {
-	$sqlString = "CONCAT(" . $string . ")";
-	return $sqlString;
+	return 'CONCAT(' . $string . ')';
 }
 
 function joinName($input, $glue = ' ') {
-	$displayName = implode($glue, $input);
-	return $displayName;
+	return implode($glue, $input);
 }
 
 function getSqlForNameInDisplayFormat($input, $module, $glue = ' ') {
@@ -3294,8 +3206,7 @@ function getSqlForNameInDisplayFormat($input, $module, $glue = ' ') {
 	} else {
 		$formattedNameListString = $input[$fieldsName];
 	}
-	$sqlString = concatNamesSql($formattedNameListString);
-	return $sqlString;
+	return concatNamesSql($formattedNameListString);
 }
 
 function getModuleSequenceNumber($module, $recordId) {
@@ -3336,7 +3247,7 @@ function getReturnPath($host, $from_email) {
 	$host = trim($host);
 
 	// Review if the host is not local
-	if (!in_array(strtolower($host), array('localhost'))) {
+	if ('localhost' != strtolower($host)) {
 		if (strpos($from_email, '@')) {
 			list($from_name, $from_domain) = explode('@', $from_email);
 		} else {

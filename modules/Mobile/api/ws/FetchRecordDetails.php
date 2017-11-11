@@ -10,8 +10,8 @@
  ************************************************************************************/
 include_once 'include/Webservices/Retrieve.php';
 include_once 'include/Webservices/DescribeObject.php';
-include_once dirname(__FILE__) . '/FetchRecord.php';
-include_once dirname(__FILE__) . '/Describe.php';
+include_once __DIR__ . '/FetchRecord.php';
+include_once __DIR__ . '/Describe.php';
 
 class crmtogo_WS_FetchRecordDetails extends crmtogo_WS_FetchRecord {
 	
@@ -84,7 +84,7 @@ class crmtogo_WS_FetchRecordDetails extends crmtogo_WS_FetchRecord {
 		$blocks = array(); 
 		$labelFields = false;
 
-		if($module == 'Events' || $module == 'Calendar' || $module == 'Timecontrol') {
+		if($module == 'Timecontrol' || $module == 'cbCalendar') {
 			// sets times & dates to local time zone and format
 			$date = new DateTimeField($resultRecord['date_start'].' '.$resultRecord['time_start']);
 			$startDateTime = $date->getDisplayDateTimeValue();	

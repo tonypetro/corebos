@@ -32,7 +32,7 @@ $mod_strings = Array(
 
 'LBL_LIST_NAME'=>'Name',
 'LBL_LIST_LAST_NAME'=>'Last Name',
-'LBL_LIST_COMPANY'=>'Company',
+'LBL_LIST_COMPANY'=>'Organization',
 'LBL_LIST_WEBSITE'=>'Website',
 'LBL_LIST_LEAD_NAME'=>'Lead Name',
 'LBL_LIST_EMAIL'=>'Email',
@@ -43,7 +43,7 @@ $mod_strings = Array(
 'LBL_LEAD_NAME'=>'Lead Name:',
 'LBL_LEAD_INFORMATION'=>'Lead Information',
 'LBL_FIRST_NAME'=>'First Name:',
-'LBL_COMPANY'=>'Company:',
+'LBL_COMPANY'=>'Organization:',
 'LBL_DESIGNATION'=>'Designation:',
 'LBL_PHONE'=>'Phone:',
 'LBL_LAST_NAME'=>'Last Name:',
@@ -120,14 +120,12 @@ $mod_strings = Array(
 
 'LBL_TOOL_FORM_TITLE'=>'Lead Tools',
 
-'LBL_SELECT_TEMPLATE_TO_MAIL_MERGE'=>'Select template to Mail Merge:',
-
 'Salutation'=>'Salutation',
 'First Name'=>'First Name',
 'Phone'=>'Phone',
 'Last Name'=>'Last Name',
 'Mobile'=>'Mobile',
-'Company'=>'Company',
+'Company'=>'Organization',
 'Fax'=>'Fax',
 'Email'=>'Email',
 'Secondary Email'=>'Secondary Email',

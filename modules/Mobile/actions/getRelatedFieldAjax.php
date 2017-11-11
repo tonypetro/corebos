@@ -9,9 +9,9 @@
  * Modified by crm-now GmbH, www.crm-now.com
  ************************************************************************************/
 require_once('include/utils/utils.php');
-include_once dirname(__FILE__) . '/../api/ws/Controller.php';
-include_once dirname(__FILE__) . '/../api/ws/Utils.php';
-include_once dirname(__FILE__) . '/../views/models/SearchFilter.php';
+include_once __DIR__ . '/../api/ws/Controller.php';
+include_once __DIR__ . '/../api/ws/Utils.php';
+include_once __DIR__ . '/../views/models/SearchFilter.php';
 include_once 'include/Webservices/Query.php';
 
 class crmtogo_UI_getRelatedFieldAjax extends crmtogo_WS_Controller{
@@ -27,7 +27,7 @@ class crmtogo_UI_getRelatedFieldAjax extends crmtogo_WS_Controller{
 		$parentselector = vtlib_purify($request->get('parentselector'));
 		$parentid=  str_replace('_selector','',$parentselector);
 		$parentid=  crmtogo_WS_Utils::fixReferenceIdByModule($module, $parentid);
-
+		$searchresult = Array();
 		//HelpDesk special case with Product.
 		if($module == 'HelpDesk' && $parentid == 'product_id'){
 			$query = "SELECT modulename,fieldname FROM vtiger_entityname WHERE entityidcolumn = ?";

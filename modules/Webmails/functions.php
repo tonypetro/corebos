@@ -425,8 +425,7 @@ function cut_address(&$addr, &$charset)
     */
 
     // Loop through addresses
-    for ($i = 0; $i < sizeof($addresses); $i++)
-    {
+    for ($i = 0; $i < count($addresses); $i++) {
         // Wrap address in brackets, if not already
         $pos = strrpos($addresses[$i], '<');
         if (!is_int($pos))
@@ -692,7 +691,7 @@ function load_list ($path)
      {
        $buffer = trim(fgets($fp, 4096));
        if ($buffer != "")
-	 array_push ($contacts, $buffer);
+	$contacts[] = $buffer;
      }
 
    fclose($fp);
@@ -802,8 +801,7 @@ function loadSession(&$ev, &$key)
     return '';
   }
 
-  $line = trim(fgets($file, 1024));
-  return $line;
+  return trim(fgets($file, 1024));
 }
 
 // Convert a language string to HTML

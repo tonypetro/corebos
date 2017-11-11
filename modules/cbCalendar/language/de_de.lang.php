@@ -20,8 +20,8 @@ $mod_strings = Array(
 	'Subject' => 'Betreff',
 	'Start Date Time' => 'Startdatum und -zeit',
 	'End Date Time' => 'Enddatum und -zeit',
-	'Time Start' => 'Startzeit',
-	'End Time' => 'Endzeit',
+	'Time Start' => 'Startzeit (System Time)',
+	'End Time' => 'Endzeit (System Time)',
 	'Due Date' => 'Fälligkeitsdatum',
 	'Related To' => 'Bezogen auf',
 	'Related with' => 'Bezogene Aufgabe',
@@ -37,7 +37,7 @@ $mod_strings = Array(
 	'Send Reminder' => 'Benachrichtigung senden',
 	'LBL_SENDREMINDER' => 'Benachrichtigung senden',
 	'Recurrence' => 'Wiederholung',
-	'No Time' => 'Keine Zeit',
+	'No Time' => 'All Day',
 	'LBL_RELATEDTO' => 'Bezogen auf',
 	'LBL_INVITE'=>'Einladen',
 	'LBL_REPEAT'=>'Wiederholen',
@@ -91,6 +91,8 @@ $mod_strings = Array(
 	'Weekly'=>'Woche(n)',
 	'Monthly'=>'Monat(e)',
 	'Yearly'=>'Jahr',
+	'DATE_SHOULDNOT_PAST' => 'dem jetzigen Datum und der gegenwärtigen Zeit für geplante Aktivitäten sein.',
+	'TIME_SHOULDNOT_PAST' => 'der gegenwärtigen Zeit sein.',
 );
 
 ?>

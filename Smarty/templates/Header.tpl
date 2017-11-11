@@ -101,22 +101,37 @@
 		<td valign=top align=left><img src="test/logo/{$FRONTLOGO}" alt="{$COMPANY_DETAILS.name}" title="{$COMPANY_DETAILS.name}" border=0 style="width: 15em;height: 4.2em;"></td>
 		<td align="center" valign=bottom>
 			<div align ="center" width ="50%" border='3' style="padding:5px;" class="noprint">
+				{if $Application_Global_Search_Active || (isset($GS_AUTOCOMP) && isset($GS_AUTOCOMP['searchin']))}
 				<table border=0 cellspacing=0 cellpadding=0 id="search" align="center">
+				{else}
+				<table border=0 cellspacing=0 cellpadding=0 align="center">
+				{/if}
 					<tr>
+						{if $Application_Global_Search_Active}
 						<form name="UnifiedSearch" method="post" action="index.php" style="margin:0px" onsubmit="if (document.getElementById('query_string').value=='') return false; VtigerJS_DialogBox.block();">
+						{else}
+						<form name="UnifiedSearch" style="margin:0px" onsubmit="return false;">
+						{/if}
 							<td style="background-color:#ffffef;border:1px;border-color:black;vertical-align:middle;" nowrap>
+								{if $Application_Global_Search_Active || (isset($GS_AUTOCOMP) && isset($GS_AUTOCOMP['searchin']))}
 								<input type="hidden" name="action" value="UnifiedSearch" style="margin:0px">
 								<input type="hidden" name="module" value="Home" style="margin:0px">
 								<input type="hidden" name="parenttab" value="{$CATEGORY}" style="margin:0px">
 								<input type="hidden" name="search_onlyin" value="--USESELECTED--" style="margin:0px">
-								<input type="text" name="query_string" id="query_string" value="{$QUERY_STRING}" class="searchBox" onFocus="this.value=''" >
+								<input type="text" name="query_string" id="query_string" value="{$QUERY_STRING}" class="searchBox" onFocus="this.value=''" autocomplete="off" data-autocomp='{$GS_AUTOCOMP|@json_encode}'>
+									<div id="listbox-unique-id" role="listbox" class="">
+										<ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid relation-autocomplete__target" style="opacity: 0; width: 100%;left:45%;" role="presentation"></ul>
+									</div>
+								{/if}
 							</td>
+							{if $Application_Global_Search_Active}
 							<td align ="right" style="background-color:#FFFFEF; vertical-align:middle;padding:5px;" onclick="UnifiedSearch_SelectModuleForm(this);">
 								<a href='javascript:void(0);' ><img src="{'arrow_down_black.png'|@vtiger_imageurl:$THEME}" align='left' border=0></a>
 							</td>
 							<td style="background-color:#cccccc">
 								<input type="image" class="searchBtn" alt="{$APP.LBL_FIND}" title="{$APP.LBL_FIND}" width="70%" height="70%" src="{'searchicon.PNG'|@vtiger_imageurl:$THEME}" align='left' border=1>
 							</td>
+							{/if}
 						</form>
 					</tr>
 				</table>
@@ -284,43 +299,6 @@
 
 <!-- Unified Search module selection feature -->
 <div id="UnifiedSearch_moduleformwrapper" style="position:absolute;width:417px;z-index:100002;display:none;"></div>
-<script type='text/javascript'>
-{literal}
-	function QCreate(qcoptions){
-		var module = qcoptions.options[qcoptions.options.selectedIndex].value;
-		if(module != 'none'){
-			document.getElementById("status").style.display="inline";
-			if(module == 'Events'){
-				module = 'Calendar';
-				var urlstr = '&activity_mode=Events';
-			}else if(module == 'Calendar'){
-				module = 'Calendar';
-				var urlstr = '&activity_mode=Task';
-			}else{
-				var urlstr = '';
-			}
-			jQuery.ajax({
-				method:"POST",
-				url:'index.php?module='+module+'&action='+module+'Ajax&file=QuickCreate'+urlstr
-			}).done(function(response) {
-				document.getElementById("status").style.display="none";
-				document.getElementById("qcform").style.display="inline";
-				document.getElementById("qcform").innerHTML = response;
-				jQuery("#qcform").draggable();
-				// Evaluate all the script tags in the response text.
-				var scriptTags = document.getElementById("qcform").getElementsByTagName("script");
-				for(var i = 0; i< scriptTags.length; i++){
-					var scriptTag = scriptTags[i];
-					eval(scriptTag.innerHTML);
-				}
-				posLay(qcoptions, "qcform");
-			});
-		}else{
-			hide('qcform');
-		}
-	}
-{/literal}
-</script>
 
 <div id="status" style="position:absolute;display:none;left:850px;top:95px;height:27px;white-space:nowrap;"><img src="{'status.gif'|@vtiger_imageurl:$THEME}"></div>
 

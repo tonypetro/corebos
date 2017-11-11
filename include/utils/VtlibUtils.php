@@ -53,9 +53,8 @@ function vtlib_getModuleNameById($tabid) {
 function vtlib_getModuleNameForSharing() {
 	global $adb;
 	$std_modules = array('Calendar','Leads','Accounts','Contacts','Potentials',
-			'HelpDesk','Campaigns','Quotes','PurchaseOrder','SalesOrder','Invoice','Events');
-	$modulesList = getSharingModuleList($std_modules);
-	return $modulesList;
+		'HelpDesk','Campaigns','Quotes','PurchaseOrder','SalesOrder','Invoice','Events');
+	return getSharingModuleList($std_modules);
 }
 
 /**
@@ -267,7 +266,7 @@ function __vtlib_get_modulevar_value($module, $varname) {
 }
 
 /**
- * Convert given text input to singular.
+ * @deprecated: use 'SINGLE_' or cbtranslation
  */
 function vtlib_tosingular($text) {
 	$lastpos = strripos($text, 's');
@@ -442,8 +441,8 @@ function vtlib_purify($input, $ignore=false) {
 	if(!$ignore) {
 		// Initialize the instance if it has not yet done
 		if($__htmlpurifier_instance == false) {
-			if(empty($use_charset)) $use_charset = 'UTF-8';
-			if(empty($use_root_directory)) $use_root_directory = dirname(__FILE__) . '/../..';
+			if (empty($use_charset)) $use_charset = 'UTF-8';
+			if (empty($use_root_directory)) $use_root_directory = __DIR__ . '/../..';
 
 			include_once ('include/htmlpurifier/library/HTMLPurifier.auto.php');
 

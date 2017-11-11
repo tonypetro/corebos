@@ -89,7 +89,7 @@ function getSharingUserName($id) {
 		$params = array($current_user->id, $role_seq."::%", $current_user->id);
 		if (!empty($assigned_user_id)) {
 			$query .= " OR id=?";
-			array_push($params, $assigned_user_id);
+			$params[] = $assigned_user_id;
 		}
 		$query .= " order by user_name ASC";
 		$result = $adb->pquery($query, $params, true, "Error filling in user array: ");
@@ -120,8 +120,7 @@ function getaddEventPopupTime($starttime,$endtime,$format)
 	$timearr = Array();
 	list($sthr,$stmin) = explode(":",$starttime);
 	list($edhr,$edmin) = (!empty($endtime) ? explode(':',$endtime) : array('23','0'));
-	if($format == 'am/pm')
-	{
+	if ($format == '12' || $format == 'am/pm') {
 		$hr = $sthr+0;
 		$timearr['startfmt'] = ($hr >= 12) ? "pm" : "am";
 		if($hr == 0) $hr = 12;
@@ -133,18 +132,15 @@ function getaddEventPopupTime($starttime,$endtime,$format)
 		if($edhr == 0) $edhr = 12;
 		$timearr['endhour'] = twoDigit(($edhr>12)?($edhr-12):$edhr);
 		$timearr['endmin']  = $edmin;
-		return $timearr;
-	}
-	if($format == '24')
-	{
+	} else { // if ($format == '24') {
 		$timearr['starthour'] = twoDigit($sthr);
 		$timearr['startmin']  = $stmin;
 		$timearr['startfmt']  = '';
 		$timearr['endhour']   = twoDigit($edhr);
 		$timearr['endmin']    = $edmin;
 		$timearr['endfmt']    = '';
-		return $timearr;
 	}
+	return $timearr;
 }
 
 /**
@@ -244,7 +240,7 @@ function getActFieldCombo($fieldname,$tablename,$follow_activitytype = false) {
 		if(count($subrole)> 0)
 		{
 			$roleids = $subrole;
-			array_push($roleids, $roleid);
+			$roleids[] = $roleid;
 		}
 		else
 		{

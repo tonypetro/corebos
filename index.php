@@ -15,7 +15,7 @@
  *************************************************************************************************/
 global $entityDel, $display;
 
-if(version_compare(phpversion(), '5.2.0') < 0 or version_compare(phpversion(), '7.1.0') >= 0) {
+if(version_compare(phpversion(), '5.4.0') < 0 or version_compare(phpversion(), '7.1.0') >= 0) {
 	header('Content-Type: text/html; charset=UTF-8');
 	$serverPhpVersion = phpversion();
 	require_once('phpversionfail.php');
@@ -64,12 +64,6 @@ if (!isset($dbconfig['db_hostname']) || $dbconfig['db_status']=='_DB_STAT_') {
 	exit();
 }
 
-// Set the default timezone preferred by user
-global $default_timezone;
-if(isset($default_timezone) && function_exists('date_default_timezone_set')) {
-	@date_default_timezone_set($default_timezone);
-}
-
 require_once('include/logging.php');
 require_once('modules/Users/Users.php');
 $calculate_response_time = GlobalVariable::getVariable('Debug_Calculate_Response_Time',0,'',Users::getActiveAdminId());
@@ -111,34 +105,23 @@ if (in_array($action, $nologinaction) and file_exists('modules/Utilities/'.$acti
 if($action == 'ModuleManagerExport') {
 	include('modules/Settings/ModuleManager/Export.php');
 }
-// END
 
 //Code added for 'Path Traversal/File Disclosure' security fix - Philip
 $is_module = false;
 $is_action = false;
-if(isset($_REQUEST['module']))
-{
+if (isset($_REQUEST['module'])) {
 	$module = vtlib_purify($_REQUEST['module']);
-	$dir = @scandir($root_directory."modules");
-	$temp_arr = Array("CVS","Attic");
-	$res_arr = @array_intersect($dir,$temp_arr);
-	if(count($res_arr) == 0 && !preg_match("/[\/.]/",$module)) {
-		if(@in_array($module,$dir))
-			$is_module = true;
+	if (!preg_match('/[\/.]/',$module)) {
+		$dir = @scandir($root_directory.'modules', SCANDIR_SORT_NONE);
+		$in_dir = @scandir($root_directory.'modules/'.$module, SCANDIR_SORT_NONE);
+		$is_module = @in_array($module,$dir);
+		$is_action = @in_array($action.'.php',$in_dir);
 	}
-	$in_dir = @scandir($root_directory."modules/".$module);
-	$res_arr = @array_intersect($in_dir,$temp_arr);
-	if(count($res_arr) == 0 && !preg_match("/[\/.]/",$module)) {
-		if(@in_array($action.".php",$in_dir))
-			$is_action = true;
-	}
-	if (empty($action)) $is_action = false;
-	if(!$is_module)
-	{
+	if (!$is_module) {
 		die("Module name is missing or incorrect. Please check the module name.");
 	}
-	if(!$is_action)
-	{
+	if (empty($action)) $is_action = false;
+	if (!$is_action) {
 		die('Action name is missing or incorrect. Please check the action name: '.vtlib_purify($action));
 	}
 }
@@ -206,7 +189,6 @@ if(isset($action) && isset($module))
 		preg_match("/^LeadConvertToEntities/", $action) ||
 		preg_match("/^downloadfile/", $action) ||
 		preg_match("/^massdelete/", $action) ||
-		preg_match("/^updateLeadDBStatus/",$action) ||
 		preg_match("/^updateRole/",$action) ||
 		preg_match("/^UserInfoUtil/",$action) ||
 		preg_match("/^deleteRole/",$action) ||
@@ -560,11 +542,20 @@ if((!$viewAttachment) && (!$viewAttachment && $action != 'home_rss') && $action 
 	if((!$skipFooters) && $action != "ChangePassword" && $action != "body" && $action != $Ajx_module."Ajax" && $action!='Popup' && $action != 'ImportStep3' && $action != 'ActivityAjax' && $action != 'getListOfRecords') {
 		cbEventHandler::do_action('corebos.footer.prefooter');
 		$coreBOS_uiapp_name = GlobalVariable::getVariable('Application_UI_Name',$coreBOS_app_name);
+		$coreBOS_uiapp_companyname = GlobalVariable::getVariable('Application_UI_CompanyName',$coreBOS_uiapp_name);
 		$coreBOS_uiapp_version = GlobalVariable::getVariable('Application_UI_Version',$coreBOS_app_version);
 		$coreBOS_uiapp_url = GlobalVariable::getVariable('Application_UI_URL',$coreBOS_app_url);
 		echo "<br><br><br><table border=0 cellspacing=0 cellpadding=5 width=100% class=settingsSelectedUI >";
-		echo "<tr><td class=small align=left><span style='color: rgb(153, 153, 153);'>Powered by ".$coreBOS_uiapp_name." <span id='_vtiger_product_version_'>$coreBOS_uiapp_version</span></span></td>";
-		echo "<td class=small align=right><span>&copy; 2004-".date('Y')." <a href='$coreBOS_uiapp_url' target='_blank'>$coreBOS_uiapp_name</a></span></td></tr></table>";
+		echo "<tr><td class=small align=left><span style='color: rgb(153, 153, 153);'>".$coreBOS_uiapp_name." <span id='_vtiger_product_version_'>$coreBOS_uiapp_version</span>";
+		$coreBOS_uiapp_showgitversion = GlobalVariable::getVariable('Application_UI_ShowGITVersion',0);
+		$coreBOS_uiapp_showgitdate = GlobalVariable::getVariable('Application_UI_ShowGITDate',0);
+		if ($coreBOS_uiapp_showgitversion || $coreBOS_uiapp_showgitdate) {
+			list($gitversion,$gitdate) = explode(' ',file_get_contents('include/sw-precache/gitversion'));
+			$gitdate = trim(str_replace('-','',$gitdate));
+			echo '&nbsp;('.($coreBOS_uiapp_showgitversion ? $gitversion : '').($coreBOS_uiapp_showgitdate ? $gitdate : '').')';
+		}
+		echo '</span></td>';
+		echo "<td class=small align=right><span>&copy; 2004-".date('Y')." <a href='$coreBOS_uiapp_url' target='_blank'>$coreBOS_uiapp_companyname</a></span></td></tr></table>";
 		if($calculate_response_time) {
 			$endTime = microtime(true);
 			echo "<table align='center'><tr><td align='center'>";

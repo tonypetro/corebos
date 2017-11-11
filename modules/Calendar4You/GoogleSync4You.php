@@ -247,11 +247,7 @@ class GoogleSync4You {
         $query = "SELECT * FROM `its4you_googlesync4you_dis` WHERE `userid`=? AND `event`=? AND `type` =?";
 		$result = $this->db->pquery($query, array($this->user_id, $this->event, $type));
 		$num_rows = $this->db->num_rows($result);
-		if ($num_rows == 1) {
-            return true;
-        }
-		
-		return false;
+        return $num_rows == 1;
     }
     
     public function loadUserCalendar() {
@@ -297,17 +293,17 @@ class GoogleSync4You {
         $event->setDescription(decode_html(utf8_decode($Data["description"])));
         $event->setLocation(decode_html(utf8_decode(trim($Data["location"]))));
         $start = new Google_Service_Calendar_EventDateTime();
-        if(strlen($startTime)>6)
-        $start->setDateTime($startDate.'T'.$this->removeLastColon($startTime).':00.000');
+        if(strlen($startTime)>4)
+        $start->setDateTime($startDate.'T'.$startTime.':00.000');
         else
-        $start->setDateTime($startDate.'T'.$this->removeLastColon($startTime).':00:00.000');
+        $start->setDateTime($startDate.'T'.$startTime.':00:00.000');
         $start->setTimeZone("$default_timezone");
         $event->setStart($start);
         $end = new Google_Service_Calendar_EventDateTime();
-        if(strlen($endTime)>6)
-        $end->setDateTime($endDate.'T'.$this->removeLastColon($endTime).':00.000');
+        if(strlen($endTime)>4)
+        $end->setDateTime($endDate.'T'.$endTime.':00.000');
         else
-        $end->setDateTime($endDate.'T'.$this->removeLastColon($endTime).':00:00.000');  
+        $end->setDateTime($endDate.'T'.$endTime.':00:00.000');  
         $end->setTimeZone("$default_timezone");
         $event->setEnd($end);
         $SendEventNotifications = new Google_Service_Calendar_EventReminders(); 
@@ -348,11 +344,17 @@ catch(Exception $e){
         $event->setDescription(decode_html(utf8_decode($Data["description"])));
         $event->setLocation(decode_html(utf8_decode(trim($Data["location"]))));
         $start = new Google_Service_Calendar_EventDateTime();
-        $start->setDateTime($startDate.'T'.$this->removeLastColon($startTime).':00.000');
+        if(strlen($startTime)>4)
+        $start->setDateTime($startDate.'T'.$startTime.':00.000');
+        else
+        $start->setDateTime($startDate.'T'.$startTime.':00:00.000');
         $start->setTimeZone("$default_timezone");
         $event->setStart($start);
         $end = new Google_Service_Calendar_EventDateTime();
-        $end->setDateTime($endDate.'T'.$this->removeLastColon($endTime).':00.000');
+        if(strlen($endTime)>4)
+        $end->setDateTime($endDate.'T'.$endTime.':00.000');
+        else
+        $end->setDateTime($endDate.'T'.$endTime.':00:00.000');
         $end->setTimeZone("$default_timezone");
         $event->setEnd($end);
         $SendEventNotifications = new Google_Service_Calendar_EventReminders(); 

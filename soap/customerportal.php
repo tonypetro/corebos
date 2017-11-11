@@ -361,7 +361,7 @@ class Vtiger_Soap_CustomerPortal {
 	/** Preference value caching */
 	static $_prefs_cache = array();
 	static function lookupPrefValue($key) {
-		if(self::$_prefs_cache[$key]) {
+		if (isset(self::$_prefs_cache[$key])) {
 			return self::$_prefs_cache[$key];
 		}
 		return false;
@@ -421,8 +421,7 @@ function get_ticket_comments($input_array)
 	}
 
 	$seed_ticket = new HelpDesk();
-	$response = $seed_ticket->get_ticket_comments_list($ticketid);
-	return $response;
+	return $seed_ticket->get_ticket_comments_list($ticketid);
 }
 
 /**	function used to get the combo values ie., picklist values of the HelpDesk module and also the list of products
@@ -503,8 +502,8 @@ function get_combo_values($input_array)
 											(SELECT contactid FROM vtiger_contactdetails WHERE accountid =
 													(SELECT accountid FROM vtiger_contactdetails WHERE contactid=?))
 							';
-			array_push($params, $id);
-			array_push($params, $id);
+			$params[] = $id;
+			$params[] = $id;
 		}
 		$serviceResult = $adb->pquery($servicequery,$params);
 
@@ -637,9 +636,8 @@ function save_faq_comment($input_array)
 	}
 
 	$params = Array('id'=>"$id", 'sessionid'=>"$sessionid");
-	$result = get_KBase_details($input_array);
 
-	return $result;
+	return get_KBase_details($input_array);
 }
 
 /** function to get a list of tickets and to search tickets
@@ -654,13 +652,16 @@ function save_faq_comment($input_array)
 
 
 function get_tickets_list($input_array) {
-
 	global $adb,$log, $current_user;
 	//To avoid SQL injection we are type casting as well as bound the id variable.
 	$id = (int) vtlib_purify($input_array['id']);
 
 	$only_mine = $input_array['onlymine'];
-	$where = $adb->sql_escape_string($input_array['where']);
+	if (empty($input_array['where'])) {
+		$where = '';
+	} else {
+		$where = $adb->sql_escape_string($input_array['where']);
+	}
 	$match = $input_array['match'];
 	$sessionid = $input_array['sessionid'];
 
@@ -694,7 +695,7 @@ function get_tickets_list($input_array) {
 	$entity_ids_list = array();
 	if($only_mine == 'true' || $show_all == 'false')
 	{
-		array_push($entity_ids_list,$id);
+		$entity_ids_list[] = $id;
 	}
 	else
 	{
@@ -740,11 +741,9 @@ function get_tickets_list($input_array) {
 	}
 	$params = array($entity_ids_list);
 
-
 	$TicketsfieldVisibilityByColumn = array();
 	foreach($fields_list as $fieldlabel=> $fieldname) {
-		$TicketsfieldVisibilityByColumn[$fieldname] =
-			getColumnVisibilityPermission($current_user->id,$fieldname,'HelpDesk');
+		$TicketsfieldVisibilityByColumn[$fieldname] = getColumnVisibilityPermission($current_user->id,$fieldname,'HelpDesk');
 	}
 
 	$res = $adb->pquery($query,$params);
@@ -1009,7 +1008,6 @@ function authenticate_user($username,$password,$version,$login = 'true')
 
 		$list[0]['sessionid'] = $sessionid;
 	}
-
 	return $list;
 }
 
@@ -1598,7 +1596,7 @@ function get_list_values($id,$module,$sessionid,$only_mine='true')
 	$show_all=show_all($module);
 	if($only_mine == 'true' || $show_all == 'false')
 	{
-		array_push($entity_ids_list,$id);
+		$entity_ids_list[] = $id;
 	}
 	else
 	{
@@ -2197,7 +2195,7 @@ function get_product_list_values($id,$modulename,$sessionid,$only_mine='true')
 
 	if($only_mine == 'true' || $show_all == 'false')
 	{
-		array_push($entity_ids_list,$id);
+		$entity_ids_list[] = $id;
 	}
 	else
 	{
@@ -3120,7 +3118,7 @@ function get_service_list_values($id,$modulename,$sessionid,$only_mine='true')
 
 	if($only_mine == 'true' || $show_all == 'false')
 	{
-		array_push($entity_ids_list,$id);
+		$entity_ids_list[] = $id;
 	}
 	else
 	{
@@ -3384,8 +3382,7 @@ function getCurrencySymbol($result,$i,$column){
 	global $adb;
 	$currencyid = $adb->query_result($result,$i,$column);
 	$curr = getCurrencySymbolandCRate($currencyid);
-	$value = "(".$curr['symbol'].")";
-	return $value;
+	return '('.$curr['symbol'].')';
 
 }
 

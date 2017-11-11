@@ -74,7 +74,7 @@ $mod_strings = array(
 	'Top Accounts' => 'Top Organisations',
 	'Top Potentials' => 'Top Opportunities',
 	'Top Quotes' => 'Top Quotes',
-	'Top Trouble Tickets' => 'Top Trouble Tickets',
+	'Top Trouble Tickets' => 'Top Support Tickets',
 	'Top Invoices' => 'Top Invoices',
 	'Top Sales Orders' => 'Top Sales Orders',
 	'Top Purchase Orders' => 'Top Purchase Orders',
@@ -97,5 +97,8 @@ $mod_strings = array(
 	'LBL_HOME_ADDWINDOW' => 'Add Window',
 	'LBL_GETTING_STARTED' => 'Getting Started',
 	'ExpirePasswordAfterDays' => 'Expire Password After Days',
+	'FieldsNotFoundInFilter' => 'Fields not found in Selected Filter',
+	'FilterNotFound' => 'Filter You have Selected is Not Found',
+	'Permission Denied' => 'Permission Denied',
 );
 ?>

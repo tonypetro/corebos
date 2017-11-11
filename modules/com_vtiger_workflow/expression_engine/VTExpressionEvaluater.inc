@@ -43,6 +43,9 @@ class VTFieldExpressionEvaluater{
 				'add_time' => '__vt_add_time',
 				'sub_time' => '__vt_sub_time',
 				'substring' => '__vt_substring',
+				'stringposition' => '__cb_stringposition',
+				'stringlength' => '__cb_stringlength',
+				'stringreplace' => '__cb_stringreplace',
 				'uppercase' => '__vt_uppercase',
 				'lowercase' => '__vt_lowercase',
 				'uppercasefirst' => '__vt_uppercasefirst',
@@ -51,9 +54,12 @@ class VTFieldExpressionEvaluater{
 				'ceil' => '__vt_ceil',
 				'floor' => '__vt_floor',
 				'modulo' => '__cb_modulo',
+				'aggregation' => '__cb_aggregation',
+				'aggregation_fields_operation' => '__cb_aggregation_operation',
 				'getCurrentUserID' => '__getCurrentUserID',
 				'getCurrentUserName' => '__getCurrentUserName',
 				'getCurrentUserField' => '__getCurrentUserField',
+				'getEntityType' => '__cbwf_setype',
 				'getLatitude' => '__cb_getLatitude',
 				'getLongitude' => '__cb_getLongitude',
 				'getGEODistance' => '__cb_getGEODistance',
@@ -69,9 +75,23 @@ class VTFieldExpressionEvaluater{
 				'getGEODistanceFromAssignUser2ContactShipping' => '__cb_getGEODistanceFromAssignUser2ContactShipping',
 				'getGEODistanceFromCoordinates' => '__cb_getGEODistanceFromCoordinates'
 		);
-		$wfexpfuncs = $adb->query('select expname,funcname from com_vtiger_workflows_expfunctions');
+		$this->rawparams = array(
+			'__cb_getGEODistanceFromUser2AccountBilling',
+			'__cb_getGEODistanceFromAssignUser2AccountBilling',
+			'__cb_getGEODistanceFromUser2AccountShipping',
+			'__cb_getGEODistanceFromAssignUser2AccountShipping',
+			'__cb_getGEODistanceFromUser2ContactBilling',
+			'__cb_getGEODistanceFromAssignUser2ContactBilling',
+			'__cb_getGEODistanceFromUser2ContactShipping',
+			'__cb_getGEODistanceFromAssignUser2ContactShipping',
+			'__cbwf_setype',
+		);
+		$wfexpfuncs = $adb->query('select expname,funcname,rawparams from com_vtiger_workflows_expfunctions');
 		while ($func = $adb->fetch_array($wfexpfuncs)) {
 			$this->functions[$func['expname']] = $func['funcname'];
+			if ($func['rawparams'] == 1) {
+				$this->rawparams[] = $func['funcname'];
+			}
 		}
 		$this->operations = array_merge($this->functions, $this->operators);
 		$this->expr = $expr;
@@ -106,16 +126,20 @@ class VTFieldExpressionEvaluater{
 				}
 			}else{
 				$func = $this->operations[$op->value];
-				if (substr($func, 0, 28)=='__cb_getGEODistanceFromUser2' || substr($func, 0, 33)=='__cb_getGEODistanceFromAssignUser') {
+				if (in_array($func, $this->rawparams)) {
 					$relto = $expr->getParams();
 					$params = array();
 					foreach ($relto as $key => $value) {
-						if(is_object($value)){
-							array_push($params,$this->env($value,true));
-						}else{
-							array_push($params,$value);
+						if (is_object($value)) {
+							$params[] = $this->env($value,true);
+						} else {
+							$params[] = $value;
 						}
 					}
+				} elseif ($func == '__cb_aggregation' || $func == '__cb_aggregation_operation') {
+					$params = array_map(array($this, 'exec'), $expr->getParams());
+					if (count($params)==3) $params[] = ''; // no conditions
+					$params[] = $this->env;
 				} else {
 					$params = array_map(array($this, 'exec'), $expr->getParams());
 				}

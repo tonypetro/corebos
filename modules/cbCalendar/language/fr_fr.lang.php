@@ -19,8 +19,8 @@ $mod_strings = Array(
 
 	'Subject' => 'Sujet',
 	'Start Date Time' => 'Date et heure de début',
-	'Time Start' => 'Heure',
-	'End Time' => 'Hora Fin',
+	'Time Start' => 'Heure (System Time)',
+	'End Time' => 'Hora Fin (System Time)',
 	'Due Date' => 'Échéance',
 	'Assigned To' => 'Assigné à',
 	'Related with' => 'Événements Relatif',
@@ -34,7 +34,7 @@ $mod_strings = Array(
 	'Duration' => 'Durée',
 	'Duration Minutes' => 'Durée minutes',
 	'Location' => 'Localisation',
-	'No Time' => 'Sans heure',
+	'No Time' => 'Toute la journée',
 	'Send Reminder' => 'Envoyer rappel',
 	'LBL_SENDREMINDER' => 'Envoyer rappel',
 	'Created Time' => 'Créé le',
@@ -95,6 +95,8 @@ $mod_strings = Array(
 	'Weekly' => 'Semaine(s)',
 	'Monthly' => 'Mois',
 	'Yearly' => 'Année',
+	'DATE_SHOULDNOT_PAST' => 'Date et heure des activités planifiées',
+	'TIME_SHOULDNOT_PAST' => 'Activités courantes planifiées',
 );
 
 ?>

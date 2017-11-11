@@ -215,45 +215,56 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 		return $mysql_query;
 	}
 
-	public function query($q){
-		$mysql_query = $this->wsVTQL2SQL($q,$meta,$queryRelatedModules);
+	public function query($q) {
+		$mysql_query = $this->wsVTQL2SQL($q, $meta, $queryRelatedModules);
+		if (strpos($mysql_query, 'vtiger_inventoryproductrel')) {
+			$invlines = true;
+			$pdowsid = vtws_getEntityId('Products');
+			$srvwsid = vtws_getEntityId('Services');
+		} else {
+			$invlines = false;
+		}
 		$this->pearDB->startTransaction();
 		$result = $this->pearDB->pquery($mysql_query, array());
 		$error = $this->pearDB->hasFailedTransaction();
 		$this->pearDB->completeTransaction();
 
-		if($error){
-			throw new WebServiceException(WebServiceErrorCode::$DATABASEQUERYERROR,
-				vtws_getWebserviceTranslatedString('LBL_'.WebServiceErrorCode::$DATABASEQUERYERROR));
+		if ($error) {
+			throw new WebServiceException(WebServiceErrorCode::$DATABASEQUERYERROR, vtws_getWebserviceTranslatedString('LBL_'.WebServiceErrorCode::$DATABASEQUERYERROR));
 		}
 
 		$noofrows = $this->pearDB->num_rows($result);
 		$output = array();
-		for($i=0; $i<$noofrows; $i++){
-			$row = $this->pearDB->fetchByAssoc($result,$i);
-			$rowcrmid = (isset($row['crmid']) ? $row['crmid'] : '');
-			if(!$meta->hasPermission(EntityMeta::$RETRIEVE,$rowcrmid)){
+		for ($i=0; $i<$noofrows; $i++) {
+			$row = $this->pearDB->fetchByAssoc($result, $i);
+			$rowcrmid = (isset($row['crmid']) ? $row['crmid'] : (isset($row['id']) ? $row['id'] : ''));
+			if (!$meta->hasPermission(EntityMeta::$RETRIEVE, $rowcrmid)) {
 				continue;
 			}
-			$newrow = DataTransform::sanitizeDataWithColumn($row,$meta);
+			$newrow = DataTransform::sanitizeDataWithColumn($row, $meta);
 			if (__FQNExtendedQueryIsFQNQuery($q)) { // related query
-				$relflds = array_diff_key($row,$newrow);
-				foreach ($queryRelatedModules as $relmod => $relmeta) {
-					$lrm = strtolower($relmod);
-					$newrflds = array();
-					foreach ($relflds as $fldname => $fldvalue) {
-						$fldmod = substr($fldname, 0, strlen($relmod));
-						if (isset($row[$fldname]) and $fldmod==$lrm) {
-							$newkey = substr($fldname, strlen($lrm));
-							$newrflds[$newkey] = $fldvalue;
+				if ($invlines) {
+					$newrow = $row;
+					$newrow['id'] = (getSalesEntityType($newrow['id']) == 'Products' ? $pdowsid : $srvwsid) . 'x' . $newrow['id'];
+				} else {
+					$relflds = array_diff_key($row, $newrow);
+					foreach ($queryRelatedModules as $relmod => $relmeta) {
+						$lrm = strtolower($relmod);
+						$newrflds = array();
+						foreach ($relflds as $fldname => $fldvalue) {
+							$fldmod = substr($fldname, 0, strlen($relmod));
+							if (isset($row[$fldname]) and $fldmod==$lrm) {
+								$newkey = substr($fldname, strlen($lrm));
+								$newrflds[$newkey] = $fldvalue;
+							}
 						}
+						$relrow = DataTransform::sanitizeDataWithColumn($newrflds, $relmeta);
+						$newrelrow = array();
+						foreach ($relrow as $key => $value) {
+							$newrelrow[$lrm.$key] = $value;
+						}
+						$newrow = array_merge($newrow, $newrelrow);
 					}
-					$relrow = DataTransform::sanitizeDataWithColumn($newrflds,$relmeta);
-					$newrelrow = array();
-					foreach ($relrow as $key => $value) {
-						$newrelrow[$lrm.$key] = $value;
-					}
-					$newrow = array_merge($newrow,$newrelrow);
 				}
 			}
 			$output[] = $newrow;
@@ -266,8 +277,8 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 		$current_user = vtws_preserveGlobal('current_user',$this->user);
 
 		$label = (isset($app_strings[$elementType]))? $app_strings[$elementType]:$elementType;
-		$createable = (strcasecmp(isPermitted($elementType,EntityMeta::$CREATE),'yes')===0)? true:false;
-		$updateable = (strcasecmp(isPermitted($elementType,EntityMeta::$UPDATE),'yes')===0)? true:false;
+		$createable = strcasecmp(isPermitted($elementType, EntityMeta::$CREATE), 'yes') === 0;
+		$updateable = strcasecmp(isPermitted($elementType, EntityMeta::$UPDATE), 'yes') === 0;
 		$deleteable = $this->meta->hasDeleteAccess();
 		$retrieveable = $this->meta->hasReadAccess();
 		$fields = $this->getModuleFields();
@@ -288,9 +299,9 @@ class VtigerModuleOperation extends WebserviceEntityOperation {
 			if(((int)$webserviceField->getPresence()) == 1) {
 				continue;
 			}
-			array_push($fields,$this->getDescribeFieldArray($webserviceField));
+			$fields[] = $this->getDescribeFieldArray($webserviceField);
 		}
-		array_push($fields,$this->getIdField($this->meta->getObectIndexColumn()));
+		$fields[] = $this->getIdField($this->meta->getObectIndexColumn());
 		$purified_mfcache[$mfkey] = $fields;
 		return $fields;
 	}

@@ -8,7 +8,7 @@
  * All Rights Reserved.
  ************************************************************************************/
 include_once 'include/Webservices/Query.php';
-include_once dirname(__FILE__) . '/Filter.php';
+include_once __DIR__ . '/Filter.php';
 	
 class crmtogo_WS_SearchFilterModel extends crmtogo_WS_FilterModel {
 	protected $criterias;
@@ -32,7 +32,7 @@ class crmtogo_WS_SearchFilterModel extends crmtogo_WS_FilterModel {
 	function execute($fieldnames, $paging = false, $calwhere ='') {
 		$selectClause = sprintf("SELECT %s", implode(',', $fieldnames));
 		$fromClause = sprintf("FROM %s", $this->moduleName);
-		if (($this->moduleName = 'Calendar' || $this->moduleName = 'Events') and $calwhere !='') {
+		if ($this->moduleName == 'cbCalendar' and $calwhere !='') {
 			$whereClause = " WHERE date_start >= '".$calwhere['start']."' AND date_start <= '".$calwhere['end']."'";
 		}
 		else {
@@ -40,6 +40,7 @@ class crmtogo_WS_SearchFilterModel extends crmtogo_WS_FilterModel {
 		}
 		$orderClause = "";
 		$groupClause = "";
+		$limitClause = '';
 		if ($paging) {
 			$config = crmtogo_WS_Controller::getUserConfigSettings();
 			$limitClause = "LIMIT 0,".$config['NavigationLimit'];

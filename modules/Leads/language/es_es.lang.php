@@ -127,14 +127,12 @@ $mod_strings = Array(
 
 'LBL_TOOL_FORM_TITLE'=>'Herramientas de Pre-Contacto',
 
-'LBL_SELECT_TEMPLATE_TO_MAIL_MERGE'=>'Seleccione una plantilla para enviar el Mailing:',
-
 'Salutation'=>'Saludo',
 'First Name'=>'Nombre',
 'Phone'=>'Teléfono',
 'Last Name'=>'Apellidos',
 'Mobile'=>'Tel .Móvil',
-'Company'=>'Empresa',
+'Company'=>'Cuenta',
 'Fax'=>'Fax',
 'Email'=>'Email',
 'Secondary Email'=>'Email Secundario',

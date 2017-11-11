@@ -348,9 +348,10 @@ function sendfile_email()
 																											{assign var=keyadmin value=$data.isadmin}
 																											{assign var=display_type value=$data.displaytype}
 																											{assign var=_readonly value=$data.readonly}
+																											{assign var=extendedfieldinfo value=$data.extendedfieldinfo}
 
 																											{if $label ne ''}
-																												<td class="dvtCellLabel" align=right width=25%>
+																												<td class="dvtCellLabel" align=right width=25% style="white-space: normal;">{strip}
 																												{if $keycntimage ne ''}
 																													{$keycntimage}
 																												{elseif $keyid eq '71' || $keyid eq '72'}<!-- Currency symbol -->
@@ -362,7 +363,7 @@ function sendfile_email()
 																												{else}
 																													{$label}
 																												{/if}
-																												</td>
+																												{/strip}</td>
 																												{if $EDIT_PERMISSION eq 'yes' && $display_type neq '2' && $_readonly eq '0'}
 																													{* Performance Optimization Control *}
 																													{if !empty($DETAILVIEW_AJAX_EDIT) }
@@ -442,10 +443,10 @@ function sendfile_email()
 													{elseif $TODO_PERMISSION eq 'true' || $EVENT_PERMISSION eq 'true' || $CONTACT_PERMISSION eq 'true'|| $MODULE eq 'Contacts' || $MODULE eq 'Leads' || ($MODULE eq 'Documents')}
 
 														{if $MODULE eq 'Contacts'}
-															{assign var=subst value="contact_id"}
-															{assign var=acc value="&account_id=$accountid"}
+															{assign var=subst value="cto_id"}
+															{assign var=acc value="&rel_id=$accountid"}
 														{else}
-															{assign var=subst value="parent_id"}
+															{assign var=subst value="rel_id"}
 															{assign var=acc value=""}
 														{/if}
 
@@ -466,26 +467,8 @@ function sendfile_email()
 														{if $MODULE eq 'Contacts' || $EVENT_PERMISSION eq 'true'}
 															<tr class="actionlink actionlink_addevent">
 																<td align="left" style="padding-left:10px;">
-																	<a href="index.php?module=Calendar4You&action=EventEditView&return_module={$MODULE}&return_action=DetailView&activity_mode=Events&return_id={$ID}&{$subst}={$ID}{$acc}&parenttab={$CATEGORY}" class="webMnu"><img src="{'AddEvent.gif'|@vtiger_imageurl:$THEME}" hspace="5" align="absmiddle"  border="0"/></a>
-																	<a href="index.php?module=Calendar4You&action=EventEditView&return_module={$MODULE}&return_action=DetailView&activity_mode=Events&return_id={$ID}&{$subst}={$ID}{$acc}&parenttab={$CATEGORY}" class="webMnu">{$APP.LBL_ADD_NEW} {$APP.Event}</a>
-																</td>
-															</tr>
-														{/if}
-
-														{if $TODO_PERMISSION eq 'true' && ($MODULE eq 'Accounts' || $MODULE eq 'Leads')}
-															<tr class="actionlink actionlink_addtodo">
-																<td align="left" style="padding-left:10px;">
-																	<a href="index.php?module=Calendar4You&action=EventEditView&return_module={$MODULE}&return_action=DetailView&activity_mode=Task&return_id={$ID}&{$subst}={$ID}{$acc}&parenttab={$CATEGORY}" class="webMnu"><img src="{'AddToDo.gif'|@vtiger_imageurl:$THEME}" hspace="5" align="absmiddle" border="0"/></a>
-																	<a href="index.php?module=Calendar4You&action=EventEditView&return_module={$MODULE}&return_action=DetailView&activity_mode=Task&return_id={$ID}&{$subst}={$ID}{$acc}&parenttab={$CATEGORY}" class="webMnu">{$APP.LBL_ADD_NEW} {$APP.Todo}</a>
-																</td>
-															</tr>
-														{/if}
-
-														{if $MODULE eq 'Contacts' && $CONTACT_PERMISSION eq 'true'}
-															<tr class="actionlink actionlink_addtodo">
-																<td align="left" style="padding-left:10px;">
-																	<a href="index.php?module=Calendar4You&action=EventEditView&return_module={$MODULE}&return_action=DetailView&activity_mode=Task&return_id={$ID}&{$subst}={$ID}{$acc}&parenttab={$CATEGORY}" class="webMnu"><img src="{'AddToDo.gif'|@vtiger_imageurl:$THEME}" hspace="5" align="absmiddle" border="0"/></a>
-																	<a href="index.php?module=Calendar4You&action=EventEditView&return_module={$MODULE}&return_action=DetailView&activity_mode=Task&return_id={$ID}&{$subst}={$ID}{$acc}&parenttab={$CATEGORY}" class="webMnu">{$APP.LBL_ADD_NEW} {$APP.Todo}</a>
+																	<a href="index.php?module=cbCalendar&action=EditView&return_module={$MODULE}&return_action=DetailView&return_id={$ID}&{$subst}={$ID}{$acc}&cbfromid={$ID}&parenttab={$CATEGORY}" class="webMnu"><img src="{'AddEvent.gif'|@vtiger_imageurl:$THEME}" hspace="5" align="absmiddle"  border="0"/></a>
+																	<a href="index.php?module=cbCalendar&action=EditView&return_module={$MODULE}&return_action=DetailView&return_id={$ID}&{$subst}={$ID}{$acc}&cbfromid={$ID}&parenttab={$CATEGORY}" class="webMnu">{$APP.LBL_ADD_NEW} {$APP.Event}</a>
 																</td>
 															</tr>
 														{/if}

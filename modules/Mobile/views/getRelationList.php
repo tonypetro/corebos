@@ -8,9 +8,9 @@
  * All Rights Reserved.
  * Modified by crm-now GmbH, www.crm-now.com
  ************************************************************************************/
-include_once dirname(__FILE__) . '/../api/ws/RelatedRecords.php';
-include_once dirname(__FILE__) . '/../api/ws/Utils.php';
-include_once dirname(__FILE__) . '/../api/ws/FetchRecordDetails.php';
+include_once __DIR__ . '/../api/ws/RelatedRecords.php';
+include_once __DIR__ . '/../api/ws/Utils.php';
+include_once __DIR__ . '/../api/ws/FetchRecordDetails.php';
 
 class crmtogo_UI_GetRelatedLists extends crmtogo_WS_RelatedRecords {
 	function process(crmtogo_API_Request $request) {
@@ -26,11 +26,7 @@ class crmtogo_UI_GetRelatedLists extends crmtogo_WS_RelatedRecords {
 			$detailresponse_record = array();
 			foreach ($relatedlistsmodule as $module) {
 				$moduleWSId = crmtogo_WS_Utils::getEntityModuleWSId($module);
-				if($module == 'Events' || $module == 'Calendar') {
-					$fieldnames = crmtogo_WS_Utils::getEntityFieldnames('Calendar');
-				} else {
-					$fieldnames = crmtogo_WS_Utils::getEntityFieldnames($module);
-				}
+				$fieldnames = crmtogo_WS_Utils::getEntityFieldnames($module);
 				foreach ($wsResponseResult[$module] as $key => $shortrecordid) {
 					if ($shortrecordid >0) {
 						$recordid = $moduleWSId.'x'.$shortrecordid;

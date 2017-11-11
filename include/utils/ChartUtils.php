@@ -34,7 +34,7 @@ class ChartUtils {
 		} else {
 			$reportModules = array();
 		}
-		array_push($reportModules,$report->primarymodule);
+		$reportModules[] = $report->primarymodule;
 
 		$restrictedModules = false;
 		foreach($reportModules as $mod) {
@@ -152,8 +152,8 @@ class ChartUtils {
 				}
 			}
 		}
-		if(count($groupByFields) == 0) {
-			$ChartDataArray['error'] = "<div class='componentName'>".getTranslatedString('LBL_NO_DATA', 'Reports')."</div";
+		if (count($groupByFields) == 0) {
+			$ChartDataArray['error'] = "<div class='componentName'>".getTranslatedString('LBL_NO_DATA', 'Reports').'</div>';
 		}
 		$ChartDataArray['xaxisData'] = $groupByFields;
 		$ChartDataArray['yaxisData'] = $yaxisArray;
@@ -176,7 +176,7 @@ class ChartUtils {
 		}
 		$lnks = implode(',',$lnks);
 		$bcolor = array();
-		for ($cnt=1;$cnt<count($labels);$cnt++) {
+		for ($cnt=1, $cntMax = count($labels); $cnt< $cntMax; $cnt++) {
 			$bcolor[] = 'getRandomColor()';
 		}
 		$bcolor = implode(',',$bcolor);

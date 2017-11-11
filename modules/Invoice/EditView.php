@@ -173,6 +173,7 @@ if($isduplicate == 'true') {
 	$currencyid = $inventory_cur_info['currency_id'];
 	$focus->id = '';
 	$focus->mode = '';
+	$smarty->assign('__cbisduplicatedfromrecordid', $record);
 }
 $focus->preEditCheck($_REQUEST,$smarty);
 if (!empty($_REQUEST['save_error']) and $_REQUEST['save_error'] == "true") {
@@ -226,6 +227,17 @@ if (isset ($_REQUEST['opportunity_id']) && $_REQUEST['opportunity_id'] != '') {
 	$smarty->assign("ASSOCIATEDPRODUCTS", $associated_prod);
 	$smarty->assign("AVAILABLE_PRODUCTS", count($associated_prod)>0 ? 'true' : 'false');
 	$smarty->assign("MODE", $focus->mode);
+}
+if (isset($_REQUEST['convertfromid']) && $_REQUEST['convertfromid'] != '') {
+	$cfromid = vtlib_purify($_REQUEST['convertfromid']);
+	$cfrom = getSalesEntityType($cfromid);
+	$cffocus = CRMEntity::getInstance($cfrom);
+	$associated_prod = getAssociatedProducts($cfrom, $cffocus, $cfromid);
+	$smarty->assign('ASSOCIATEDPRODUCTS', $associated_prod);
+	$smarty->assign('AVAILABLE_PRODUCTS', count($associated_prod)>0 ? 'true' : 'false');
+	$smarty->assign('MODE', $focus->mode);
+	$_REQUEST['account_id'] = getRelatedAccountContact($cfromid, 'Accounts');
+	$_REQUEST['contact_id'] = getRelatedAccountContact($cfromid, 'Contacts');
 }
 if (isset ($_REQUEST['product_id']) && $_REQUEST['product_id'] != '') {
 	$focus->column_fields['product_id'] = $_REQUEST['product_id'];

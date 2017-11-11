@@ -25,7 +25,7 @@ function getFieldByReportLabel($module, $label) {
 	if(empty($cachedModuleFields)) {
 		return null;
 	}
-	$label=decode_html($label);
+	$label = str_replace('&', 'and', decode_html($label));
 	foreach ($cachedModuleFields as $fieldInfo) {
 		$fieldLabel = str_replace(' ', '_', $fieldInfo['fieldlabel']);
 		$fieldLabel = str_replace('&', 'and', $fieldLabel);
@@ -64,7 +64,7 @@ function isPicklistUIType($uitype) {
  * @param String $fieldName
  * @return String
  */
-function getReportFieldValue ($report, $picklistArray, $dbField, $valueArray, $fieldName) {
+function getReportFieldValue($report, $picklistArray, $dbField, $valueArray, $fieldName) {
 	global $current_user;
 
 	$db = PearDatabase::getInstance();
@@ -118,23 +118,16 @@ function getReportFieldValue ($report, $picklistArray, $dbField, $valueArray, $f
 			$fieldvalue = $value;
 		}
 	} elseif( $fieldType == 'date' && !empty($value)) {
-		if($module == 'Calendar' && $field->getFieldName() == 'due_date') {
-			$endTime = $valueArray['calendar_end_time'];
-			if(empty($endTime)) {
-				$recordId = $valueArray['calendar_id'];
-				$endTime = getSingleFieldValue('vtiger_activity', 'time_end', 'activityid', $recordId);
-			}
-			$date = new DateTimeField($value.' '.$endTime);
-			$fieldvalue = $date->getDisplayDate();
-		} else {
 			$fieldvalue = DateTimeField::convertToUserFormat($value);
-		}
 	} elseif( $fieldType == "datetime" && !empty($value)) {
 		$date = new DateTimeField($value);
 		$fieldvalue = $date->getDisplayDateTimeValue();
-	} elseif( $fieldType == 'time' && !empty($value) && $field->getFieldName() != 'duration_hours' && $field->getFieldName() != 'totaltime') {
-		$date = new DateTimeField($value);
-		$fieldvalue = $date->getDisplayTime();
+		$user_format = ($current_user->hour_format=='24' ? '24' : '12');
+		if ($user_format != '24') {
+			$curr_time = DateTimeField::formatUserTimeString($fieldvalue, '12');
+			list($dt,$tm) = explode(' ',$fieldvalue);
+			$fieldvalue = $dt . ' ' . $curr_time;
+		}
 	} elseif( $fieldType == "picklist" && !empty($value) ) {
 		if(is_array($picklistArray)) {
 			if(isset($picklistArray[$dbField->name]) && is_array($picklistArray[$dbField->name])
@@ -164,6 +157,10 @@ function getReportFieldValue ($report, $picklistArray, $dbField, $valueArray, $f
 		} else {
 			implode(', ', $translatedValueList);
 		}
+	} elseif( $fieldType == "multireference" && !empty($value)){
+		require_once 'modules/PickList/PickListUtils.php';
+		$content = getPicklistValuesSpecialUitypes($field->getUIType(),$field->getFieldName(),$value,'DetailView');
+		$fieldvalue = strip_tags(implode(', ',$content));
 	}
 	if($fieldvalue == "") {
 		return "-";
@@ -184,9 +181,9 @@ function getReportFieldValue ($report, $picklistArray, $dbField, $valueArray, $f
 	return $fieldvalue;
 }
 
-function report_getMoreInfoFromRequest($reporttype,$pmodule,$smodule,$pivotcolumns) {
+function report_getMoreInfoFromRequest($cbreporttype,$pmodule,$smodule,$pivotcolumns) {
 	global $adb;
-	if ($_REQUEST['cbreporttype']=='external') {
+	if (isset($_REQUEST['cbreporttype']) && $_REQUEST['cbreporttype']=='external') {
 		if (isset($_REQUEST['adduserinfo']) and ($_REQUEST['adduserinfo'] == 'on' || $_REQUEST['adduserinfo'] == 1)) {
 			$aui = 1;
 		} else {
@@ -196,11 +193,11 @@ function report_getMoreInfoFromRequest($reporttype,$pmodule,$smodule,$pivotcolum
 			'url' => vtlib_purify($_REQUEST['externalurl']),
 			'adduserinfo' => $aui,
 		));
-		$reporttype = 'external';
-	} elseif ($_REQUEST['cbreporttype']=='directsql') {
+		$cbreporttype = 'external';
+	} elseif (isset($_REQUEST['cbreporttype']) && $_REQUEST['cbreporttype']=='directsql') {
 		$minfo = vtlib_purify($_REQUEST['directsqlcommand']);
-		$reporttype = 'directsql';
-	} elseif ($_REQUEST['cbreporttype']=='crosstabsql') {
+		$cbreporttype = 'directsql';
+	} elseif (isset($_REQUEST['cbreporttype']) && $_REQUEST['cbreporttype']=='crosstabsql') {
 		require_once 'include/adodb/pivottable.inc.php';
 		$pmod = CRMEntity::getInstance($pmodule);
 		$smod = CRMEntity::getInstance($smodule);
@@ -254,12 +251,13 @@ function report_getMoreInfoFromRequest($reporttype,$pmodule,$smodule,$pivotcolum
 			'crosstabaggfunction' => vtlib_purify($_REQUEST['crosstabaggfunction']),
 			'sql' => $sql
 		));
-		$reporttype = 'crosstabsql';
+		$cbreporttype = 'crosstabsql';
 	} else {
 		$minfo = '';
+		$cbreporttype='corebos';
 	}
 	return array(
-		$reporttype,
+		$cbreporttype,
 		$minfo
 	);
 }
